@@ -23,23 +23,23 @@ becomes
 
 {% highlight scala %}
 def rawParse(reader: Reader[Char]) = {
- parse(phrase(capture(rootParser) ~ dropDead), reader) match {
- case Success(wrapped, _) =>
- wrapped match {
- case result ~ in => result match {
- case ns : NoSuccess => ns
- case _ => Success(result, in)
- }
- }
- case ns: NoSuccess => ns //should not be seen
- }
-
-private val dropDead = Parser { in => Success(in, new CharSequenceReader("")) }
-
-private def capture[T](p: => Parser[T]) = Parser { in =>
- p(in) match {
- case ns : NoSuccess => Success(ns,in)
- case _ @ s => s
- }
- }
+  parse(phrase(capture(rootParser) ~ dropDead), reader) match {
+    case Success(wrapped, _) =>
+    wrapped match {
+      case result ~ in => result match {
+	case ns : NoSuccess => ns
+	  case _ => Success(result, in)
+      }
+    }
+	case ns: NoSuccess => ns //should not be seen
+  }
+  
+  private val dropDead = Parser { in => Success(in, new CharSequenceReader("")) }
+  
+  private def capture[T](p: => Parser[T]) = Parser { in =>
+    p(in) match {
+	case ns : NoSuccess => Success(ns,in)
+	  case _ @ s => s
+    }
+  }
 {% endhighlight %}
