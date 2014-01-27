@@ -1,0 +1,27 @@
+---
+layout: post
+title: Surprising difference between Shtml ajaxButton and Shtml ajaxCheckbox
+categories:
+- lift
+- Scala
+tags: []
+status: publish
+type: post
+published: true
+meta: {}
+---
+Consider the following code
+<pre> def clear = SHtml.ajaxButton("Clear", ()=> {
+     this ! Clear
+     Noop
+     }
+  )
+
+  def checkbox = SHtml.ajaxCheckbox(true, selected => {
+    this ! SetScroll(selected)
+  }, "id" -> check)</pre>
+Note the Noop reference at the end of callback function for the ajaxButton to satisfy the signature:<em> ()=>JsCmd</em>
+
+However the signature for the ajaxCheckbox callback is<em> (Boolean) =>JcCmd</em>. However, in this case the compiler accepts Unit as the "return" value.
+
+This implies there is an implicit conversion from Unit to Noop, that is local to ajaxCheckbox!

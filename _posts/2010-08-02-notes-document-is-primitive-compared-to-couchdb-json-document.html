@@ -1,0 +1,17 @@
+---
+layout: post
+title: Notes document is primitive compared to CouchDB JSON document
+categories:
+- CouchDB
+tags: []
+status: publish
+type: post
+published: true
+meta:
+  _wp_old_slug: ''
+---
+A Notes document is limited to name/value pairs of primitives (number,string,date) and lists thereof.
+
+Notes applications often required more complex structures that could be represented by these limited types. Those structures were encoded into strings (and strings thereof), traditionally using the | as the separator. Much of the application code then consisted of logic to pack and unpack these representations.
+
+JSON allows the CouchDB document to contain an arbitrary object tree. A wide variety of tools are available for parsing and data binding, further reducing the development effort.

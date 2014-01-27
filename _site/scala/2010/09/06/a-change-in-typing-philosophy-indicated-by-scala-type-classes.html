@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>A change in typing philosophy, indicated by Scala type classes</title>
+        <meta name="viewport" content="width=device-width">
+
+        <!-- syntax highlighting CSS -->
+        <link rel="stylesheet" href="/css/syntax.css">
+
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="/css/main.css">
+
+    </head>
+    <body>
+
+        <div class="site">
+          <div class="header">
+            <h1 class="title"><a href="/">Your New Jekyll Site</a></h1>
+            <a class="extra" href="/">home</a>
+          </div>
+
+          <h2>A change in typing philosophy, indicated by Scala type classes</h2>
+<p class="meta">06 Sep 2010</p>
+
+<div class="post">
+<a href="http://debasishg.blogspot.com/2010/09/towards-generic-apis-for-open-world.html">This</a> discussion provides a clear and useful discussion of how Scala type classes might be used.
+
+The code requires that a type be specified, which then indirectly defines the code to be executed
+<blockquote><code>val i = foo[Int]("123") // 123
+val f = foo[Float]("123.0") // 123.0</code></blockquote>
+Where i and f will have types Int and Float respectively.
+
+Coming from other strongly typed languages, one might be tempted to write
+<blockquote><code>val i:Int = foo("123") // 123
+val f:Float = foo("123.0") // 123.0</code></blockquote>
+Which does not work. It might be argued that the type inferencer should be sophisticated enough to map this code to the earlier form.
+
+Ignoring any technical reasons that prohibit the second form (or would lead to undesirable ambiguities), there are other reasons for prefer the first style.
+<ul>
+	<li>The type is placed right next to the affected code, which is always helpful.</li>
+	<li>Passing the result of foo as an argument to a method is straightforward and well defined (even in the face of methods overloaded on argument type).</li>
+	<li>Conforms to the Scala style of only typing vals where absolutely necessary.</li>
+	<li>Conforms to the functional style which minimises temporary variables.</li>
+</ul>
+
+</div>
+
+
+          <div class="footer">
+            <div class="contact">
+              <p>
+                Your Name<br />
+                What You Are<br />
+                you@example.com
+              </p>
+            </div>
+            <div class="contact">
+              <p>
+                <a href="https://github.com/yourusername">github.com/yourusername</a><br />
+                <a href="https://twitter.com/yourusername">twitter.com/yourusername</a><br />
+              </p>
+            </div>
+          </div>
+        </div>
+
+    </body>
+</html>

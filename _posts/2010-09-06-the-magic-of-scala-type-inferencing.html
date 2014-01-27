@@ -1,0 +1,38 @@
+---
+layout: post
+title: The magic of Scala type inferencing
+categories:
+- Scala
+tags: []
+status: publish
+type: post
+published: true
+meta:
+  _wp_old_slug: ''
+---
+Considering mapping the Java XPathFunction into a standard Scala function represention.
+
+An implemention for a single parameter might be
+
+{% highlight scala %}abstract class One[T,R<:Object] extends Function1[T,R] with XPathFunction { 
+      def evaluate(list:java.util.List[_]) = apply(list.get(0).asInstanceOf[T]) 
+}
+{% endhighlight %}
+
+With the identity function defined as
+
+{% highlight scala %}object OneString extends One[String,String]{ 
+    def apply(s:String)=s
+}
+{% endhighlight %}
+
+The repl has the following result
+<pre>scala> OneString.evaluate(Collections.singletonList("ddd"))                                                                                                  
+res22: String = ddd
+scala> val xf:XPathFunction = OneString
+xf: javax.xml.xpath.XPathFunction = <function1>
+scala> xf.evaluate(Collections.singletonList("ddd"))       
+res24: java.lang.Object = ddd
+</pre>
+
+Note the types of the return values! The same function is being executed in each case, but via two aliases which have different associated types. 

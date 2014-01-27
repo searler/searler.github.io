@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>Play 2 Server Sent Events and Ajax performance</title>
+        <meta name="viewport" content="width=device-width">
+
+        <!-- syntax highlighting CSS -->
+        <link rel="stylesheet" href="/css/syntax.css">
+
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="/css/main.css">
+
+    </head>
+    <body>
+
+        <div class="site">
+          <div class="header">
+            <h1 class="title"><a href="/">Your New Jekyll Site</a></h1>
+            <a class="extra" href="/">home</a>
+          </div>
+
+          <h2>Play 2 Server Sent Events and Ajax performance</h2>
+<p class="meta">20 Oct 2012</p>
+
+<div class="post">
+Consider a "dumb client" Single Page App where the domain logic resides on the server.
+The UI events are delivered via Ajax, with the server responses flowing over SSE to update the UI.
+This minimizes the size of Javascript code while (hopefully) retaining the responsive interaction.
+
+The key question is thus latency and server load.
+
+A simple experiment wires an Ajax call to the SSE event handler, where the call delivers a new data element over the SSE connection, forming an infinite loop.
+That provides a simple measurement of the total request/response chain.
+
+Both Play 2 and Jetty Continuations based implementations were tested, using Fedora Core 17, Google Chrome running on AMD Phenom II X6 1100T.
+<table>
+<thead>
+<tr>
+<td>Implementation</td>
+<td>latency (ms)</td>
+<td>CPU Load (%)</td>
+<td>JRE Load (%)</td>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Play</td>
+<td>16</td>
+<td>52</td>
+<td>7</td>
+</tr>
+<tr>
+<td>Jetty</td>
+<td>12</td>
+<td>5</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+CPU Load is reported by top and JRE Load by JConsole.
+
+Play uses Iteratees and NIO, which are both designed for concurrency rather than raw throughput.
+A 10x difference is a surprising high cost to pay for the concurrency and expressiveness of the Play API.
+
+The proposed user case would have less than a score of clients, which would be feasible even with a vanilla block Servlet implementation.
+
+</div>
+
+
+          <div class="footer">
+            <div class="contact">
+              <p>
+                Your Name<br />
+                What You Are<br />
+                you@example.com
+              </p>
+            </div>
+            <div class="contact">
+              <p>
+                <a href="https://github.com/yourusername">github.com/yourusername</a><br />
+                <a href="https://twitter.com/yourusername">twitter.com/yourusername</a><br />
+              </p>
+            </div>
+          </div>
+        </div>
+
+    </body>
+</html>

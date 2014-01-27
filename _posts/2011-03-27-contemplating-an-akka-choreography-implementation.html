@@ -1,0 +1,59 @@
+---
+layout: post
+title: Contemplating an Akka choreography implementation
+categories:
+- Akka
+- Scala
+tags: []
+status: publish
+type: post
+published: true
+meta: {}
+---
+A common SOA design pattern decomposes a service into multiple references to other services, referenced via request/response JMS interactions.  The implementation commonly uses XPDL, BPEL or some proprietary variant running on a workflow engine such as Tibco BusinessWorks or BEA(Oracle) Aqualogic Service Bus.
+
+Such services commonly require some state (e.g. summing of balances) and non trivial logic (implementing business rules). That makes them difficult to implement using data flow oriented tools such as Apache Camel or Spring Integration. An actor implementation is a much better match to the requirements and the general model behind such composite services.  The service can be long running (1-20 seconds) essentially mandating the usage of a reactive actor to avoid holding a thread. There are many actor implementations that could be considered. Akka actors are a particularly good match
+<ol>
+	<li>Runs on Scala, allowing reuse of the entire Java ecosystem and existing application code base</li>
+	<li>Small footprint, reactive actors</li>
+	<li>Trivial integration with Camel and hence to a wide range of integration mechanisms (JMS, AMQP, REST, etc)</li>
+</ol>
+A simple service might support a IVR system that reads back the balance of the account associated with the callers phone number. The IVR sends a JMS message containing the phone number and expects a JMS message containing the balance in response. Two sub-services are referenced to map number to account and account to balance. Each sub-service listens on a JMS queue and replies with the required data.
+
+An interaction with a  sub-service requires the sending of a JMS message containing the request data and a Correlation ID that will be included in the reply message so it can be tied back to originator.  The actor implementing the composed service would then have the skeleton form
+<div>{% highlight scala %}
+class CompositeService extends Actor {
+def receive = {
+  case (CorrelationID,Acct) => //invoke Acct -> Balance service
+  case (CorrelationID,Balance) => //reply to IVS application
+ }
+{% endhighlight %}
+
+Where each case matches the contents of the JMS reply message from the external service.
+
+The service reference to map the phone number to account needs to be performed by the actor so that it does not block the logic that handles the initiating message from the IVR system. We then have
+
+{% highlight scala %}
+class CompositeService extends Actor {
+var replyTo:Destination = _
+def receive = {
+  case (Destination, Number) => //invoke Number -> Account service
+  case (CorrelationID,Account) => //invoke Acct -> Balance service
+  case (CorrelationID,Balance) => //reply to IVS application
+}
+{% endhighlight %}
+
+</div>
+Where Destination is the JMS ReplyTo address of the IVR systems. The actor has state (the replyTo field) and new instance must thus be created for each invocation by the IVR system.
+
+The reply from each sub- service invocation is sent to the actor instance for processing.
+
+The above is certainly workable, but has some disadvantages
+<ol>
+	<li>Mandates usage of actors
+Unit testing would be easier with a serialized implementation.</li>
+	<li> Mandates the usage of Akka</li>
+	<li>Difficult to map more complex orchestration into this structure.
+The primary force behind the usage of XPDL, BPEL, etc was the desire to move the orchestration definition into the hands of business process designers.</li>
+</ol>
+The goal is to provide a library with which such orchestrations can easily be implemented.  It is unlikely to be directly accessible to business process designers since it requires some Scala knowledge. Compiling a representation such as XPDL into the Scala implementation should be straightforward, providing as such support to the business process designers as the commercial implementations. 

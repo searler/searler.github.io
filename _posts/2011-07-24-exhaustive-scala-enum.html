@@ -1,0 +1,22 @@
+---
+layout: post
+title: Exhaustive Scala Enum
+categories:
+- Scala
+tags: []
+status: publish
+type: post
+published: true
+meta: {}
+---
+This interesting <a href="http://klangism.tumblr.com/post/7098500142/diy-exhaustiveness-checking-on-scala-enums">post</a> describes how to define an enum in Scala such that the compiler will flag a failure to exhaustively cover all the options. It also provides an implementation of <em>values</em>, which is often very useful.
+
+However, I found the gist did not function under either Scala 2.8.1 or 2.9.0-1. The compiler would falsely indicate that not all options were covered.  Using objects rather than vals resolved the problem.
+
+Arguably this is a clearer representation since Enum values are singletons.  It also avoids some of the "boilerplate" nature of the vals implementation, while retaining the compiler checking.
+<pre>object Foos extends Enum {
+  sealed trait EnumVal extends Value
+  object F extends EnumVal { val name = "F" }
+  object X extends EnumVal { val name = "X" }
+}</pre>
+Unfortunately, this implementation does not populate the <em>values</em> until each object is explicitly referenced.

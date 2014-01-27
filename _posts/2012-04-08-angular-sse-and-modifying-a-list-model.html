@@ -1,0 +1,43 @@
+---
+layout: post
+title: Angular, SSE and modifying a list model
+categories:
+- angular
+tags: []
+status: publish
+type: post
+published: true
+meta: {}
+---
+The previous <a title="Angular.js and Server Sent Events wiring" href="http://cognitiveentity.wordpress.com/2012/04/08/angular-js-and-server-sent-events-wiring/">example</a> used a very simple model, consisting of a single String.
+
+
+A more realistic implementation would add the strings to a list.
+{% highlight html %}
+
+<body ng-app>
+ <div ng:controller="Main">
+ <ul>
+ <li ng:repeat="item in items">
+ {{item}}
+ </li>
+ </ul>
+ </div>
+
+<script type='text/javascript'>//<![CDATA[
+
+var source = new EventSource('/events');
+
+function Main($scope) {
+ $scope.items = [];
+
+source.addEventListener('right', function(e) {
+ $scope.$apply(function() {
+ $scope.items.push(e.data);
+ });
+ },false);
+ }
+ //]]>
+ </script>
+ </body>
+{% endhighlight %}

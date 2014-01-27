@@ -1,0 +1,19 @@
+---
+layout: post
+title: dispatch rebooted with yet another futures implementation
+categories: []
+tags: []
+status: publish
+type: post
+published: true
+meta: {}
+---
+The new <a href="http://dispatch.databinder.net/Dispatch.html">dispatch</a> provides a fully asynchronous implementation with a clean futures based API. The documentation is very clear and provides a very useful discussion of how best to handle failures.
+
+However, the implementation contains its own unique implementation of futures. This was undoubtedly motivated by a desire to minimize dependencies.
+
+The next release of Scala (2.10) will contain a standard Futures implementation. Hopefully there will be a corresponding refresh of dispatch.
+
+No problem arises if dispatch is a point solution, without reference to other libraries.
+
+Some competitors to dispatch would be <a href="https://github.com/spray/spray/wiki/">spray</a> which directly uses Akka and <a href="http://www.playframework.org/">play</a> which does not. The latter is ironic given that both fall under the Typesafe banner! Play does provide standard mechanism to reference Akka futures.

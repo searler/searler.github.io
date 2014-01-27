@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>Scala implicits to simplify XPathFunction</title>
+        <meta name="viewport" content="width=device-width">
+
+        <!-- syntax highlighting CSS -->
+        <link rel="stylesheet" href="/css/syntax.css">
+
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="/css/main.css">
+
+    </head>
+    <body>
+
+        <div class="site">
+          <div class="header">
+            <h1 class="title"><a href="/">Your New Jekyll Site</a></h1>
+            <a class="extra" href="/">home</a>
+          </div>
+
+          <h2>Scala implicits to simplify XPathFunction</h2>
+<p class="meta">07 Sep 2010</p>
+
+<div class="post">
+Custom functions for xpath expressions can be defined via <a href="http://download-llnw.oracle.com/javase/6/docs/api/javax/xml/xpath/XPathFunction.html">XPathFunction</a>. The standard Java code is verbose, with the explicit type casting of the arguments only increasing the code size.
+
+An ideal implementation would allow the use of standard Scala functions, and provide an automagic conversion to XPathFunction required for integration with the Java XPath implementation.
+
+<div class="highlight"><pre><code class="scala"><span class="k">class</span> <span class="nc">One</span><span class="o">[</span><span class="kt">T</span>,<span class="kt">R</span><span class="k">&lt;:</span><span class="kt">Object</span><span class="o">](</span><span class="k">val</span> <span class="n">f</span><span class="k">:</span><span class="kt">Function1</span><span class="o">[</span><span class="kt">T</span>,<span class="kt">R</span><span class="o">])</span><span class="err"> </span> <span class="k">extends</span> <span class="nc">XPathFunction</span> <span class="o">{</span>
+ <span class="k">def</span> <span class="n">evaluate</span><span class="o">(</span><span class="n">list</span><span class="k">:</span><span class="kt">java.util.List</span><span class="o">[</span><span class="k">_</span><span class="o">])</span> <span class="k">=</span> <span class="n">f</span><span class="o">(</span><span class="n">list</span><span class="o">.</span><span class="n">get</span><span class="o">(</span><span class="mi">0</span><span class="o">).</span><span class="n">asInstanceOf</span><span class="o">[</span><span class="kt">T</span><span class="o">])</span>
+ <span class="o">}</span>
+</code></pre></div>
+
+Defines a class that wraps a Function1 and adapts it to the <em>XPathFunction</em>. Note that R must be a type that extends Object to conform to the <em>XPathExpression.evaluate</em> return type.
+
+<div class="highlight"><pre><code class="scala"><span class="k">implicit</span> <span class="k">def</span> <span class="n">f1ToOne</span><span class="o">[</span><span class="kt">T</span>,<span class="kt">R</span><span class="k">&lt;:</span><span class="kt">Object</span><span class="o">](</span><span class="n">f</span><span class="k">:</span><span class="kt">Function1</span><span class="o">[</span><span class="kt">T</span>,<span class="kt">R</span><span class="o">])</span><span class="k">=new</span> <span class="nc">One</span><span class="o">(</span><span class="n">f</span><span class="o">)</span>
+</code></pre></div>
+
+Provides an implicit conversion from Function1 to One (and hence to an implementation of XPathFunction)
+
+<div class="highlight"><pre><code class="scala"><span class="nc">Map</span><span class="o">[</span><span class="kt">String</span>,<span class="kt">XPathFunction</span><span class="o">](</span><span class="s">&quot;a1&quot;</span><span class="o">-&gt;{</span><span class="n">i</span><span class="k">:</span><span class="kt">String</span><span class="o">=&gt;</span><span class="n">i</span><span class="o">*</span><span class="mi">2</span><span class="o">})</span>
+</code></pre></div>
+
+Creates a simple naming from name to an XPathFunction, using anonymous Scala functions.
+
+Additional adapter class, implicit conversion function pairs are then needed to cover the remaining FunctionN cases.
+
+The Scala functions must still be written using Java types and in a manner that conforms to the expectations of XPathFunction.
+
+This is illegal
+
+<div class="highlight"><pre><code class="scala"><span class="nc">Map</span><span class="o">[</span><span class="kt">String</span>,<span class="kt">XPathFunction</span><span class="o">](</span><span class="s">&quot;a1&quot;</span><span class="o">-&gt;{</span><span class="n">i</span><span class="k">:</span><span class="kt">Int</span><span class="o">=&gt;</span><span class="n">i</span><span class="o">*</span><span class="mi">2</span><span class="o">})</span>
+</code></pre></div>
+
+Since Int does not extend Object.
+
+<div class="highlight"><pre><code class="scala"><span class="nc">Map</span><span class="o">[</span><span class="kt">String</span>,<span class="kt">XPathFunction</span><span class="o">](</span><span class="s">&quot;a1&quot;</span><span class="o">-&gt;{</span><span class="n">i</span><span class="k">:</span><span class="kt">Integer</span><span class="o">=&gt;</span><span class="n">i</span><span class="o">.</span><span class="n">intValue</span><span class="o">()*</span><span class="mi">2</span><span class="o">})</span>
+</code></pre></div>
+
+Has the same return type and is still illegal.
+
+But this is acceptable
+
+<div class="highlight"><pre><code class="scala"><span class="nc">Map</span><span class="o">[</span><span class="kt">String</span>,<span class="kt">XPathFunction</span><span class="o">](</span><span class="s">&quot;a1&quot;</span><span class="o">-&gt;{</span><span class="n">i</span><span class="k">:</span><span class="kt">Integer</span><span class="o">=&gt;</span><span class="k">new</span> <span class="nc">Integer</span><span class="o">(</span><span class="n">i</span><span class="o">.</span><span class="n">intValue</span><span class="o">()*</span><span class="mi">2</span><span class="o">)})</span>
+</code></pre></div>
+
+</div>
+
+
+          <div class="footer">
+            <div class="contact">
+              <p>
+                Your Name<br />
+                What You Are<br />
+                you@example.com
+              </p>
+            </div>
+            <div class="contact">
+              <p>
+                <a href="https://github.com/yourusername">github.com/yourusername</a><br />
+                <a href="https://twitter.com/yourusername">twitter.com/yourusername</a><br />
+              </p>
+            </div>
+          </div>
+        </div>
+
+    </body>
+</html>

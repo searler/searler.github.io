@@ -1,0 +1,50 @@
+---
+layout: post
+title: Scala implicits to simplify XPathFunction
+categories:
+- Scala
+tags: []
+status: publish
+type: post
+published: true
+meta:
+  _wp_old_slug: ''
+---
+Custom functions for xpath expressions can be defined via <a href="http://download-llnw.oracle.com/javase/6/docs/api/javax/xml/xpath/XPathFunction.html">XPathFunction</a>. The standard Java code is verbose, with the explicit type casting of the arguments only increasing the code size.
+
+An ideal implementation would allow the use of standard Scala functions, and provide an automagic conversion to XPathFunction required for integration with the Java XPath implementation.
+
+{% highlight scala %}class One[T,R<:Object](val f:Function1[T,R])  extends XPathFunction {
+ def evaluate(list:java.util.List[_]) = f(list.get(0).asInstanceOf[T])
+ }{% endhighlight %}
+
+Defines a class that wraps a Function1 and adapts it to the <em>XPathFunction</em>. Note that R must be a type that extends Object to conform to the <em>XPathExpression.evaluate</em> return type.
+
+{% highlight scala %}implicit def f1ToOne[T,R<:Object](f:Function1[T,R])=new One(f){% endhighlight %}
+
+Provides an implicit conversion from Function1 to One (and hence to an implementation of XPathFunction)
+
+{% highlight scala %}Map[String,XPathFunction]("a1"->{i:String=>i*2})
+{% endhighlight %}
+
+Creates a simple naming from name to an XPathFunction, using anonymous Scala functions.
+
+Additional adapter class, implicit conversion function pairs are then needed to cover the remaining FunctionN cases.
+
+The Scala functions must still be written using Java types and in a manner that conforms to the expectations of XPathFunction.
+
+This is illegal
+
+{% highlight scala %}Map[String,XPathFunction]("a1"->{i:Int=>i*2}){% endhighlight %}
+
+Since Int does not extend Object.
+
+{% highlight scala %}Map[String,XPathFunction]("a1"->{i:Integer=>i.intValue()*2})
+{% endhighlight %}
+
+Has the same return type and is still illegal.
+
+But this is acceptable
+
+{% highlight scala %}Map[String,XPathFunction]("a1"->{i:Integer=>new Integer(i.intValue()*2)})
+{% endhighlight %}

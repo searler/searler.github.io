@@ -1,0 +1,69 @@
+---
+layout: post
+title: Integrating Futures with the real world
+categories:
+- Akka
+- Scala
+tags:
+- akka
+status: publish
+type: post
+published: true
+meta: {}
+---
+<p>The previous <a href="http://cognitiveentity.wordpress.com/2012/01/17/unit-testing-akka-future-%20based-choreography/">post</a> described how to unit test a Futures based choreography implementation.</p>
+<p>This post will examine how such implementation might be connected to the external world and thus perform useful work.</p>
+<p>The <a href="http://akka.io/docs/akka-modules/1.2/modules/camel.html">Camel akka module</a> permits integration of Camel routes with Akka actors and hence with Futures. Camel provides a wide range of <a href="http://camel.apache.org/components.html">components</a>, supporting pretty much transport that might be required.</p>
+<p>Two seperate Camel implementations are required:</p>
+<ol style="list-style-type:decimal;">
+<li>Expose the service to external clients</li>
+<li>Provide access to the lower level services required by this service.</li>
+</ol>
+<p>The latter will always use a Request-Response MEP, while latter is determined by the needs of the client.</p>
+<p>A JMS based service implementation that reads from one queue and responds on another is quite common. This might be implemented as follows</p>
+<pre><code>case class OWFlow[A, R](in: String, out: String, flow: A => Future[R]) {
+
+  val inActor = Actor.actorOf(new InActor).start
+  val outActor = Actor.actorOf(new OutActor).start
+
+  private class OutActor extends Actor with Producer with Oneway {
+    val endpointUri = out
+  }
+
+  private class InActor extends Actor with Consumer {
+    val endpointUri = in
+
+    def receive = {
+      case akka.camel.Message(a: A, _) => (Future(a).flatMap(flow)).onComplete { outActor ! _ }
+    }
+  }
+}
+</code></pre>
+<p>Where <code>in</code> and <code>out</code> are the <a href="http://camel.apache.org/uris.html">Camel uris</a> that reference the appropriate transport end-points. <code>flow</code> is the service to the connected between <code>in</code> and <code>out</code>.</p>
+<p>The OutActor simply provides an oneway endpoint to Camel over which messages are sent.</p>
+<p>The InActor</p>
+<ol style="list-style-type:decimal;">
+<li>Receives message from Camel endpoint.</li>
+<li>Creates a Future whose value is that message. The Future executes asynchronously, so the actor is not blocked.</li>
+<li>The Future executes the flow</li>
+<li>Upon completion, the result is send to the outActor</li>
+<li>The outActor delivers the result to the Camel endpoint.</li>
+</ol>
+<p>An example using the <a href="http://camel.apache.org/jms.html">JMS component</a></p>
+<pre><code> val slbOW = new OWFlow("jms:slbIn", "jms:slbOut", SingleLineBalance.apply)
+</code></pre>
+<p>The lower level service can be implemented using a simple case class, wrapping a Map containing the data of interest.</p>
+<pre><code>case class Responder[K, V](map: Map[K, V]) {
+  def apply(a: Any) = map(a.asInstanceOf[K])
+}
+</code></pre>
+<p>This case class is then wired into a Camel <a href="http://camel.apache.org/routes.html">route</a> using the <a href="http://camel.apache.org/bean.html">bean component</a> and the Scala <a href="http://camel.apache.org/scala-dsl.html">DSL</a>.</p>
+<pre><code>val context = CamelContextManager.mandatoryContext
+context.addRoutes(new RouteBuilder { "seda:num".bean(Responder(Map(
+      Id(123) -> List(Num("124-555-1234"), Num("333-555-1234")))) })
+</code></pre>
+<p>The service can then be tested by sending a Num via the jms queue.</p>
+<pre><code>val producer = CamelContextManager.mandatoryContext.createProducerTemplate
+producer.sendBody("jms:slbIn", Num("124-555-1234"))
+</code></pre>
+<p>The complete test can be found on <a href="https://github.com/searler/FutureWorkflow/blob/master/src/test/scala/cognitiveentity/workflow/CamelTest.scala">github</a>. That code uses <a href="http://camel.apache.org/seda.html">seda</a> components rather than jms.</p>

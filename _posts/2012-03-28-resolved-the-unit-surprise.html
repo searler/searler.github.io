@@ -1,0 +1,15 @@
+---
+layout: post
+title: Resolved the ()=>Unit surprise
+categories:
+- Scala
+tags: []
+status: publish
+type: post
+published: true
+meta: {}
+---
+<code>f{() => println("2")}</code> calls f with a value that is a function.
+
+Scala has a special case where expressions with a return type of Unit discard any value that might otherwise be returned.
+In this case, the expression is<code>() => println("2")</code>. The resultant Unit matches the signature of f, which explains why the compiler does not complain. 

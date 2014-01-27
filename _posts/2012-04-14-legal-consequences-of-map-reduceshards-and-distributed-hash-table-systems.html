@@ -1,0 +1,20 @@
+---
+layout: post
+title: Legal consequences of map-reduce,shards and distributed hash table systems
+categories: []
+tags: []
+status: publish
+type: post
+published: true
+meta: {}
+---
+The legal consequences of holding data can be significant: privacy regulations, financial disclosure, Patriot Act, etc.
+These difficulties increase geometrically for a multinational system, particularly one that covers both the US and the EU. 
+
+Conventional system architecture, as exemplified by JEE and RDBMs, drive a centralized model where data is moved to the code. That directly leads to data for entities in one legal jurisdiction being stored in another jurisdiction. 
+
+Distributed Hash table systems, such as Riak, spread the system data across many servers. It is certainly feasible to arrange that data is placed on servers that fall in the appropriate jurisdiction. Such an approach is also possible (and arguably easier) with sharded data stores, including RDBMs. 
+
+Riak (and many other DHT systems) implement map/reduce for queries and data reduction across the servers. Map/reduce moves the code to the data. This should provide some level of legal protection since the sensitive data need never leave the server. 
+
+Of course IANAL and regulations are never quite as sensible and logical as one might hope. 

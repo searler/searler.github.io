@@ -1,0 +1,17 @@
+---
+layout: post
+title: How not to extend Scala XML
+categories:
+- Scala
+tags: []
+status: publish
+type: post
+published: true
+meta:
+  _wp_old_slug: ''
+---
+The first step in considering how to better integrate Scala and Java XML processing is a Google search to find the prior art.
+
+That found the following <a href="http://www.scalaforum.se/scala-for-java-developers/scala-xml-java-xpath-implicit-conversions/">gem</a>. The scala.xml.Elem is <strong>prettyprinted</strong> to a String and then parsed into a DOM for processing by the Java xpath implementation.
+
+This code illustrates a common concern with tools that hide the implementation details; they often hide significant performance problems. It might be argued that Scala implicit conversions will make this anti-pattern a common occurrence.

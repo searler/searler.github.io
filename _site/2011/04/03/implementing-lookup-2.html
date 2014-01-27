@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>Implementing Lookup</title>
+        <meta name="viewport" content="width=device-width">
+
+        <!-- syntax highlighting CSS -->
+        <link rel="stylesheet" href="/css/syntax.css">
+
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="/css/main.css">
+
+    </head>
+    <body>
+
+        <div class="site">
+          <div class="header">
+            <h1 class="title"><a href="/">Your New Jekyll Site</a></h1>
+            <a class="extra" href="/">home</a>
+          </div>
+
+          <h2>Implementing Lookup</h2>
+<p class="meta">03 Apr 2011</p>
+
+<div class="post">
+The previous blog entry was a broad brush description of the implementation concepts. This entry will cover the details of actually implementing the Lookup trait.
+
+Lookup uses a curried <code>apply</code> to simplify the DSL, minimizing the visual clutter.
+
+<code>call</code> is the actual implementation of the sub-service, launching the request-response interaction with <code>arg</code> and returning a <code>CI</code> instance that will appear in the corresponding response.
+
+<code>Pending</code> provides a (Recursive)PartialFunction that matches the <code>CI</code> instance. It's <code>apply</code> ignores the <code>CI</code> instance since its actual value has no impact on the processing. It returns a function that casts the request value to the expected type and evaluates the function originally provided in the call to <code>Lookup.apply</code>.
+<pre class="sourceCode"><code class="sourceCode scala"><span class="kw">trait</span> Lookup[A,R] {
+  <span class="kw">def</span> <span class="fu">apply</span>(arg:A)(fn:R =>RPF):RPF = <span class="kw">new</span> <span class="fu">Pending</span>(<span class="fu">call</span>(arg),fn)
+  <span class="kw">protected</span> <span class="kw">def</span> <span class="fu">call</span>(arg:A):CI
+}
+
+<span class="kw">private</span> <span class="kw">class</span> Pending[T](correlationId:CI,fn:T=>RPF) <span class="kw">extends</span> RPF{
+    <span class="kw">def</span> <span class="fu">isDefinedAt</span>(ci:CI) = ci == correlationId
+    <span class="kw">def</span> <span class="fu">apply</span>(ci:CI) =  {a:Any=><span class="fu">fn</span>(a.<span class="fu">asInstanceOf</span>[T])}
+}
+</code>
+<code class="sourceCode scala"><span class="kw">case</span> <span class="kw">class</span> <span class="fu">CI</span>(id:Int)</code></pre>
+A trivial example Lookup that doubles the integer request
+<pre class="sourceCode"><code class="sourceCode scala"><span class="kw">object</span> DoubleLookup <span class="kw">extends</span> Lookup[Int,Int]{
+   <span class="kw">var</span> responseQueue:List[(CI,Int)] = _
+   <span class="kw">protected</span> <span class="kw">def</span> <span class="fu">call</span>(arg:Int) = {
+      <span class="kw">val</span> ci = <span class="fu">CorrelationAllocator</span>()
+      responseQueue = ci->arg*<span class="dv">2</span> :: responseQueue
+      ci
+   }
+}</code></pre>
+Note <code>responseQueue</code> which provides a trivial implementation of the mechanism required to asynchronously deliver the response. It captures the CI (to match the <code>Pending</code> instance that triggered the request and the actual value that will be processed via that <code>Pending</code>.
+
+<code>CorrelationAllocator</code> is an object that creates sufficiently unique <code>CI</code> values.
+
+</div>
+
+
+          <div class="footer">
+            <div class="contact">
+              <p>
+                Your Name<br />
+                What You Are<br />
+                you@example.com
+              </p>
+            </div>
+            <div class="contact">
+              <p>
+                <a href="https://github.com/yourusername">github.com/yourusername</a><br />
+                <a href="https://twitter.com/yourusername">twitter.com/yourusername</a><br />
+              </p>
+            </div>
+          </div>
+        </div>
+
+    </body>
+</html>

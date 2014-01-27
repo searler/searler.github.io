@@ -1,0 +1,31 @@
+---
+layout: post
+title: A change in typing philosophy, indicated by Scala type classes
+categories:
+- Scala
+tags: []
+status: publish
+type: post
+published: true
+meta:
+  _wp_old_slug: ''
+---
+<a href="http://debasishg.blogspot.com/2010/09/towards-generic-apis-for-open-world.html">This</a> discussion provides a clear and useful discussion of how Scala type classes might be used.
+
+The code requires that a type be specified, which then indirectly defines the code to be executed
+<blockquote><code>val i = foo[Int]("123") // 123
+val f = foo[Float]("123.0") // 123.0</code></blockquote>
+Where i and f will have types Int and Float respectively.
+
+Coming from other strongly typed languages, one might be tempted to write
+<blockquote><code>val i:Int = foo("123") // 123
+val f:Float = foo("123.0") // 123.0</code></blockquote>
+Which does not work. It might be argued that the type inferencer should be sophisticated enough to map this code to the earlier form.
+
+Ignoring any technical reasons that prohibit the second form (or would lead to undesirable ambiguities), there are other reasons for prefer the first style.
+<ul>
+	<li>The type is placed right next to the affected code, which is always helpful.</li>
+	<li>Passing the result of foo as an argument to a method is straightforward and well defined (even in the face of methods overloaded on argument type).</li>
+	<li>Conforms to the Scala style of only typing vals where absolutely necessary.</li>
+	<li>Conforms to the functional style which minimises temporary variables.</li>
+</ul>

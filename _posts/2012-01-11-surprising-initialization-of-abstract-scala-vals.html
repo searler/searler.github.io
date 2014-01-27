@@ -1,0 +1,49 @@
+---
+layout: post
+title: Surprising initialization of abstract Scala vals
+categories: []
+tags: []
+status: publish
+type: post
+published: true
+meta: {}
+---
+Consider the problem of computing deltas between entries in a stream of events.  Each event is paired with the previous value and delivered to a derived implementation. This requires an initial value to be paired with initial value, what might be called the <em>zero</em>.
+
+{% highlight scala %}
+package function
+trait Delta[T] {
+   def zero: T
+   private var before: T = zero
+   def update(current: T) {
+      if (before != current) {
+         delta(before, current)
+         before = current
+      }
+   }
+   def delta(before: T, current: T)
+}
+{% endhighlight %}
+
+In the above code, the zero is provided by an abstract function.
+
+The implementation might then be
+
+{% highlight scala %}
+case class StringDelta extends Delta[String] {
+def zero = ""
+def delta(before: String, current: String) {
+      println(before, current)
+   }
+}
+{% endhighlight %}
+
+&nbsp;
+
+This works fine, but looks a little odd. The zero is a constant, which one might expect to be defined using a <em>val</em>. Changing <em>def zero</em> to <em>val zero</em> compiles (Scala permits abstract vals) but the run-time value is actually <strong>null</strong>.
+
+Changing the definition to be lazy, i.e.<em> lazy val zero = "" , </em>restores the desired behavior. The underlying implementation of lazy is obviously rather similar to def, being executed on first reference to the name.
+
+&nbsp;
+
+&nbsp;

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>Scala XMLLoader as ContentHandler</title>
+        <meta name="viewport" content="width=device-width">
+
+        <!-- syntax highlighting CSS -->
+        <link rel="stylesheet" href="/css/syntax.css">
+
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="/css/main.css">
+
+    </head>
+    <body>
+
+        <div class="site">
+          <div class="header">
+            <h1 class="title"><a href="/">Your New Jekyll Site</a></h1>
+            <a class="extra" href="/">home</a>
+          </div>
+
+          <h2>Scala XMLLoader as ContentHandler</h2>
+<p class="meta">29 Aug 2010</p>
+
+<div class="post">
+Scala makes it very easy to handle XML but does not provide any means to interact with the standard Java XML tooling. XML can only be created using literals or parsing the string representation. 
+
+The internal implementation of XML.load uses a ContentHandler.  Exposing that ContentHandler would allow Scala XML to be created from a SAX pipeline, which is half of what is required for full integration
+
+The following class provides the necessary implementation
+<div class="highlight"><pre><code class="scala"><span class="k">import</span> <span class="nn">scala.xml.factory.XMLLoader</span>
+<span class="k">import</span> <span class="nn">scala.xml._</span>
+<span class="k">import</span> <span class="nn">org.xml.sax._</span>
+<span class="k">import</span> <span class="nn">org.xml.sax.helpers.DefaultHandler</span>
+
+<span class="k">class</span> <span class="nc">Loader</span> <span class="k">extends</span> <span class="nc">DefaultHandler</span>  <span class="k">with</span>   <span class="nc">XMLLoader</span><span class="o">[</span><span class="kt">Elem</span><span class="o">]{</span>
+   <span class="k">val</span> <span class="n">newAdapter</span> <span class="k">=</span> <span class="n">adapter</span>
+   <span class="k">def</span> <span class="n">value</span> <span class="k">=</span> <span class="n">newAdapter</span><span class="o">.</span><span class="n">rootElem</span><span class="o">.</span><span class="n">asInstanceOf</span><span class="o">[</span><span class="kt">Elem</span><span class="o">]</span>
+
+   <span class="k">override</span> <span class="k">def</span> <span class="n">characters</span><span class="o">(</span> <span class="n">ch</span><span class="k">:</span><span class="kt">Array</span><span class="o">[</span><span class="kt">Char</span><span class="o">],</span><span class="n">start</span><span class="k">:</span><span class="kt">Int</span><span class="o">,</span><span class="n">length</span><span class="k">:</span><span class="kt">Int</span><span class="o">)</span> <span class="o">{</span>
+     <span class="n">newAdapter</span><span class="o">.</span><span class="n">characters</span><span class="o">(</span><span class="n">ch</span><span class="o">,</span><span class="n">start</span><span class="o">,</span><span class="n">length</span><span class="o">)</span>
+   <span class="o">}</span>
+   <span class="k">override</span> <span class="k">def</span> <span class="n">endDocument</span><span class="o">()</span> <span class="o">{</span>
+     <span class="n">newAdapter</span><span class="o">.</span><span class="n">scopeStack</span><span class="o">.</span><span class="n">pop</span>
+   <span class="o">}</span>
+   <span class="k">override</span> <span class="k">def</span> <span class="n">endElement</span><span class="o">(</span><span class="n">uri</span><span class="k">:</span><span class="kt">String</span><span class="o">,</span><span class="n">localName</span><span class="k">:</span><span class="kt">String</span><span class="o">,</span> <span class="n">qName</span><span class="k">:</span><span class="kt">String</span><span class="o">){</span>
+     <span class="n">newAdapter</span><span class="o">.</span><span class="n">endElement</span><span class="o">(</span><span class="n">uri</span><span class="o">,</span><span class="n">localName</span><span class="o">,</span><span class="n">qName</span><span class="o">)</span>
+   <span class="o">}</span>    
+   <span class="k">override</span> <span class="k">def</span> <span class="n">processingInstruction</span><span class="o">(</span><span class="n">target</span><span class="k">:</span><span class="kt">String</span><span class="o">,</span>  <span class="n">data</span><span class="k">:</span><span class="kt">String</span><span class="o">){</span>
+     <span class="n">newAdapter</span><span class="o">.</span><span class="n">processingInstruction</span><span class="o">(</span><span class="n">target</span><span class="o">,</span><span class="n">data</span><span class="o">)</span>
+   <span class="o">}</span>
+   <span class="k">override</span> <span class="k">def</span> <span class="n">startDocument</span><span class="o">(){</span>
+     <span class="n">newAdapter</span><span class="o">.</span><span class="n">scopeStack</span> <span class="n">push</span> <span class="nc">TopScope</span>
+   <span class="o">}</span>    
+   <span class="k">override</span> <span class="k">def</span> <span class="n">startElement</span><span class="o">(</span><span class="n">uri</span><span class="k">:</span><span class="kt">String</span><span class="o">,</span><span class="n">localName</span><span class="k">:</span><span class="kt">String</span><span class="o">,</span> <span class="n">qName</span><span class="k">:</span><span class="kt">String</span><span class="o">,</span><span class="n">atts</span><span class="k">:</span><span class="kt">Attributes</span><span class="o">){</span>
+       <span class="n">newAdapter</span><span class="o">.</span><span class="n">startElement</span><span class="o">(</span><span class="n">uri</span><span class="o">,</span><span class="n">localName</span><span class="o">,</span><span class="n">qName</span><span class="o">,</span><span class="n">atts</span><span class="o">)</span>
+   <span class="o">}</span>       
+<span class="o">}</span>
+</code></pre></div>
+
+Illustrated by
+<div class="highlight"><pre><code class="scala"><span class="k">import</span> <span class="nn">java.io._</span>
+<span class="k">import</span> <span class="nn">javax.xml.parsers._</span>
+<span class="k">import</span> <span class="nn">javax.xml.transform._</span>
+<span class="k">import</span> <span class="nn">javax.xml.transform.sax.SAXResult</span>
+
+<span class="k">val</span> <span class="n">transformerFactory</span> <span class="k">=</span> <span class="nc">TransformerFactory</span><span class="o">.</span><span class="n">newInstance</span>
+<span class="k">val</span> <span class="n">xformer</span> <span class="k">=</span> <span class="n">transformerFactory</span><span class="o">.</span><span class="n">newTransformer</span>
+<span class="k">val</span> <span class="n">xl</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">Loader</span>
+<span class="n">xformer</span><span class="o">.</span><span class="n">transform</span><span class="o">(</span><span class="k">new</span> <span class="nc">StreamSource</span><span class="o">(</span><span class="k">new</span> <span class="nc">StringBufferInputStream</span><span class="o">(</span><span class="s">&quot;&quot;&quot;&lt;X&gt;&lt;y/&gt;fdgfd&lt;/X&gt;&quot;&quot;&quot;</span><span class="o">)),</span> <span class="k">new</span> <span class="nc">SAXResult</span><span class="o">(</span><span class="n">xl</span><span class="o">))</span>
+<span class="n">println</span><span class="o">(</span><span class="n">xl</span><span class="o">.</span><span class="n">value</span><span class="o">)</span>
+</code></pre></div>
+
+
+</div>
+
+
+          <div class="footer">
+            <div class="contact">
+              <p>
+                Your Name<br />
+                What You Are<br />
+                you@example.com
+              </p>
+            </div>
+            <div class="contact">
+              <p>
+                <a href="https://github.com/yourusername">github.com/yourusername</a><br />
+                <a href="https://twitter.com/yourusername">twitter.com/yourusername</a><br />
+              </p>
+            </div>
+          </div>
+        </div>
+
+    </body>
+</html>

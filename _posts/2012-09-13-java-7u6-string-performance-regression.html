@@ -1,0 +1,11 @@
+---
+layout: post
+title: Java 7u6 String performance regression
+categories: []
+tags: []
+status: publish
+type: post
+published: true
+meta: {}
+---
+<p>I recently updated to Java 7u5 and found a<strong> > 10 times degradation</strong> in  the performance of some Scala parser combinator code. Some searching turned up a similar <a href="http://www.java.net/forum/topic/performance/general-performance-discussion/jre-7-update-7-performance-problem">experience</a> and <a href="http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=7197183">bug report</a></p><p>Comparing the 7u5 and 7u6 String.java code indicates a significant change in the implementation.</p><p>The older code used a char[] value, with indices. The substring/subsequence operations created a new instance that shared the value, and only changed the indices. The new implementation only has the char[] value, requiring a new copy to be created for every operation!</p><p>This change is not referenced in the release notes and the comments within the code do not provide any explanation.  </p><p>The Scala parser fortunately uses CharSequence, allowing the creation of a decorator over the String that restores the original behavior. </p><p> </p>

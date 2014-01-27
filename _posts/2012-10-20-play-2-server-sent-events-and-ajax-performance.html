@@ -1,0 +1,53 @@
+---
+layout: post
+title: Play 2 Server Sent Events and Ajax performance
+categories:
+- play
+- Scala
+tags: []
+status: publish
+type: post
+published: true
+meta:
+  _publicize_pending: '1'
+---
+Consider a "dumb client" Single Page App where the domain logic resides on the server.
+The UI events are delivered via Ajax, with the server responses flowing over SSE to update the UI.
+This minimizes the size of Javascript code while (hopefully) retaining the responsive interaction.
+
+The key question is thus latency and server load.
+
+A simple experiment wires an Ajax call to the SSE event handler, where the call delivers a new data element over the SSE connection, forming an infinite loop.
+That provides a simple measurement of the total request/response chain.
+
+Both Play 2 and Jetty Continuations based implementations were tested, using Fedora Core 17, Google Chrome running on AMD Phenom II X6 1100T.
+<table>
+<thead>
+<tr>
+<td>Implementation</td>
+<td>latency (ms)</td>
+<td>CPU Load (%)</td>
+<td>JRE Load (%)</td>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Play</td>
+<td>16</td>
+<td>52</td>
+<td>7</td>
+</tr>
+<tr>
+<td>Jetty</td>
+<td>12</td>
+<td>5</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+CPU Load is reported by top and JRE Load by JConsole.
+
+Play uses Iteratees and NIO, which are both designed for concurrency rather than raw throughput.
+A 10x difference is a surprising high cost to pay for the concurrency and expressiveness of the Play API.
+
+The proposed user case would have less than a score of clients, which would be feasible even with a vanilla block Servlet implementation.

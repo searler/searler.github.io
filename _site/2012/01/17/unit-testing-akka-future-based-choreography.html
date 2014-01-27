@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>Unit testing Akka future based choreography</title>
+        <meta name="viewport" content="width=device-width">
+
+        <!-- syntax highlighting CSS -->
+        <link rel="stylesheet" href="/css/syntax.css">
+
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="/css/main.css">
+
+    </head>
+    <body>
+
+        <div class="site">
+          <div class="header">
+            <h1 class="title"><a href="/">Your New Jekyll Site</a></h1>
+            <a class="extra" href="/">home</a>
+          </div>
+
+          <h2>Unit testing Akka future based choreography</h2>
+<p class="meta">17 Jan 2012</p>
+
+<div class="post">
+<p>The previous <a href="http://cognitiveentity.wordpress.com/2012/01/16/choreography-using-akka-futures-1/">post</a> described a choreography implementation using Futures.</p>
+<p>All technologies need to consider testability, which is thus the topic of this post.</p>
+<p>The first step is a completely self contained unit test mechanism. This allows the testing of the business logic embodied in the service, without the complexity of the concurrent runtime environment.</p>
+<p>A <a href="http://etorreborre.github.com/specs2/">specs2</a> test for the Balance service might be</p>
+<pre><code>"balance" in {
+    Balance(Acct("alpha")).get must beEqualTo(Bal(124.5F))
+  }
+</code></pre>
+<p>Note the <em>get</em> which blocks until the future returns its result.</p>
+<p>The Balance service requires a suitable mock implementation of Lookup[Acct, Bal].</p>
+<pre><code>implicit val balLook: Lookup[Acct, Bal] = Service(Map(Acct("alpha") -> Bal124.5F))
+
+
+private abstract class MapService[K, V](map: Map[K, V]) {
+    self: Function1[K, Future[V]] =>
+    def apply(a: K) = Future(map(a))
+}
+
+private case class Service[K, V](values: Map[K, V]) extends MapService(values) with Lookup[K, V]
+</code></pre>
+<p>The implicits eliminate the need to explicitly reference the balLook, much like Spring auto wiring by type.</p>
+
+</div>
+
+
+          <div class="footer">
+            <div class="contact">
+              <p>
+                Your Name<br />
+                What You Are<br />
+                you@example.com
+              </p>
+            </div>
+            <div class="contact">
+              <p>
+                <a href="https://github.com/yourusername">github.com/yourusername</a><br />
+                <a href="https://twitter.com/yourusername">twitter.com/yourusername</a><br />
+              </p>
+            </div>
+          </div>
+        </div>
+
+    </body>
+</html>

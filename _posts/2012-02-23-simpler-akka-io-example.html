@@ -1,0 +1,78 @@
+---
+layout: post
+title: SImpler akka io example
+categories:
+- Akka
+- Scala
+tags: []
+status: publish
+type: post
+published: true
+meta: {}
+---
+Akka 2.0 provides a clean <a href="http://akka.io/docs/akka/2.0-RC2/scala/io.html">mechanism</a> for non blocking I/O, abstracting all the details of NIO.
+
+The example provided is very detailed but a little large to serve as an introduction.
+
+The code below implements a very simple network service: read a length delimited ascii string and print it. The length is a 4 digit human readable number, for ease of testing.
+
+The code can then exercised using <a href="http://netcat.sourceforge.net/">netcat</a>
+<pre>nc localhost 9999 <<!
+0001A0002XY
+!
+
+import akka.actor._
+import akka.util.{ ByteString, ByteStringBuilder }
+import java.net.InetSocketAddress
+
+class LengthBoundedServer(port: Int) extends Actor {
+  import IO._
+
+  val state = IterateeRef.Map.async[IO.Handle]()(context.dispatcher)
+
+  override def preStart {
+    IOManager(context.system) listen new InetSocketAddress(port)
+  }
+
+  def receive = {
+
+    case NewClient(server) =>
+      val socket = server.accept()
+      state(socket) flatMap (_ => LengthBoundedServer.printMessage)
+
+    case Read(socket, bytes) =>
+      state(socket)(Chunk(bytes))
+
+    case Closed(socket, cause) =>
+      state(socket)(EOF(None))
+      state -= socket
+  }
+
+}
+
+object LengthBoundedServer {
+  import IO._
+  def ascii(bytes: ByteString): String = bytes.decodeString("US-ASCII").trim
+
+  def printMessage: IO.Iteratee[Unit] =
+    repeat {
+      for {
+        string <- readMessage
+ } yield {
+    println(string)
+    }
+ }
+def readMessage: IO.Iteratee[String] =
+ for {
+   lengthBytes <- take(4)
+   len = ascii(lengthBytes).toInt
+   bytes <- take(len)
+ } yield {
+   ascii(bytes)
+ }
+}
+object Main extends App {
+ val port = Option(System.getenv("PORT")) map (_.toInt) getOrElse 9999
+ val system = ActorSystem()
+ val server = system.actorOf(Props(new LengthBoundedServer(port)))
+}</pre>

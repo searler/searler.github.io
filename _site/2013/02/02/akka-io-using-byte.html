@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>Akka IO using byte[]</title>
+        <meta name="viewport" content="width=device-width">
+
+        <!-- syntax highlighting CSS -->
+        <link rel="stylesheet" href="/css/syntax.css">
+
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="/css/main.css">
+
+    </head>
+    <body>
+
+        <div class="site">
+          <div class="header">
+            <h1 class="title"><a href="/">Your New Jekyll Site</a></h1>
+            <a class="extra" href="/">home</a>
+          </div>
+
+          <h2>Akka IO using byte[]</h2>
+<p class="meta">02 Feb 2013</p>
+
+<div class="post">
+<a href="http://www.kotancode.com/2013/02/02/sending-and-receiving-google-protocol-buffers-via-akka-io-and-scala/">http://www.kotancode.com/2013/02/02/sending-and-receiving-google-protocol-buffers-via-akka-io-and-scala/</a>
+
+Used the code from <a href="http://cognitiveentity.wordpress.com/2012/03/10/akka-system-io-client/">http://cognitiveentity.wordpress.com/2012/03/10/akka-system-io-client/</a> and <a href="http://cognitiveentity.wordpress.com/2012/02/23/simpler-akka-io-example/">http://cognitiveentity.wordpress.com/2012/02/23/simpler-akka-io-example/</a> to send data serialized using ProtoBufs
+
+These examples are all string based, primarily to make the code easy to test with curl.
+
+The string representation of the length can be replaced with its 4 byte binary representation.
+The payload is still a byte[], derived from a String for convenience
+<h2>Client</h2>
+<div class="highlight"><pre><code class="scala"><span class="k">case</span> <span class="n">s</span><span class="k">:</span> <span class="kt">String</span> <span class="o">=&gt;</span> <span class="n">handle</span><span class="o">.</span><span class="n">foreach</span> <span class="o">{</span>
+<span class="n">h</span> <span class="k">=&gt;</span>
+<span class="k">val</span> <span class="n">bb</span> <span class="k">=</span> <span class="nc">ByteBuffer</span><span class="o">.</span><span class="n">allocate</span><span class="o">(</span><span class="mi">4</span><span class="o">)</span>
+<span class="n">bb</span><span class="o">.</span><span class="n">putInt</span><span class="o">(</span><span class="n">s</span><span class="o">.</span><span class="n">length</span><span class="o">)</span>
+<span class="n">bb</span><span class="o">.</span><span class="n">flip</span>
+<span class="n">h</span> <span class="n">write</span> <span class="nc">ByteString</span><span class="o">(</span><span class="n">bb</span><span class="o">)</span>
+<span class="n">h</span> <span class="n">write</span> <span class="nc">ByteString</span><span class="o">(</span><span class="n">s</span><span class="o">.</span><span class="n">getBytes</span><span class="o">(</span><span class="s">&quot;US-ASCII&quot;</span><span class="o">))</span>
+ <span class="o">}</span>
+</code></pre></div>
+<h2>Server</h2>
+&nbsp;
+
+<div class="highlight"><pre><code class="scala"><span class="k">def</span> <span class="n">readMessage</span><span class="k">:</span> <span class="kt">IO.Iteratee</span><span class="o">[</span><span class="kt">String</span><span class="o">]</span> <span class="k">=</span>
+<span class="k">for</span> <span class="o">{</span>
+<span class="n">lengthBytes</span> <span class="k">&lt;-</span> <span class="n">take</span><span class="o">(</span><span class="mi">4</span><span class="o">)</span>
+<span class="n">len</span> <span class="k">=</span> <span class="n">lengthBytes</span><span class="o">.</span><span class="n">asByteBuffer</span><span class="o">.</span><span class="n">getInt</span><span class="o">()</span>
+<span class="n">bytes</span> <span class="k">&lt;-</span> <span class="n">take</span><span class="o">(</span><span class="n">len</span><span class="o">)</span>
+<span class="o">}</span> <span class="k">yield</span> <span class="o">{</span>
+<span class="n">ascii</span><span class="o">(</span><span class="n">bytes</span><span class="o">)</span>
+<span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+
+&nbsp;
+
+&nbsp;
+
+</div>
+
+
+          <div class="footer">
+            <div class="contact">
+              <p>
+                Your Name<br />
+                What You Are<br />
+                you@example.com
+              </p>
+            </div>
+            <div class="contact">
+              <p>
+                <a href="https://github.com/yourusername">github.com/yourusername</a><br />
+                <a href="https://twitter.com/yourusername">twitter.com/yourusername</a><br />
+              </p>
+            </div>
+          </div>
+        </div>
+
+    </body>
+</html>

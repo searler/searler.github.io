@@ -1,0 +1,30 @@
+---
+layout: post
+title: Unusual java httpserver race condition
+categories: []
+tags: []
+status: publish
+type: post
+published: true
+meta: {}
+---
+The<a href="http://docs.oracle.com/javase/7/docs/jre/api/net/httpserver/spec/com/sun/net/httpserver/package-summary.html"> JDK httpserver</a> provides a simple implementation that can easily be applied to unit tests.
+
+The following example would generate a response containing <em>responseBytes.</em>
+It might be expected that the referencing code would only see the response when <em>exchange.close()</em> is called.
+In reality, the response can be seen as soon as the <em>write</em> executes!
+
+That does not matter in a real web server since the client cannot be aware of the internal processing of the server.
+Unit tests intrinsically couple the client and server together so as to progress through the test steps and validate the state of both parties.
+
+This race condition caused unit tests to randomly fail, which is always hard to diagnose.
+
+{% highlight scala %}
+private static class MockHandler implements HttpHandler{
+   @Override
+   public void handle(HttpExchange exchange) throws IOException {
+       exchange.getResponseBody().write(responseBytes);
+       exchange.close();
+   }
+}
+{% endhighlight %}

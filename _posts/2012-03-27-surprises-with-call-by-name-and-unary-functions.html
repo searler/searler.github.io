@@ -1,0 +1,46 @@
+---
+layout: post
+title: Surprises with call-by-name and unary functions
+categories:
+- play
+- Scala
+tags: []
+status: publish
+type: post
+published: true
+meta: {}
+---
+I recently created a subtle defect while using the Play2 <a href="http://scala.playframework.org/documentation/api/2.0/scala/index.html#play.api.libs.iteratee.Enumerator$">enumerators</a>
+
+Both  pushee and fromCallback are passed an onComplete that is executed when the target Iteratee can no longer accept any input. The signatures are slightly different
+<pre>pushee:onComplete: ⇒ Unit
+fromCallback:onComplete: () ⇒ Unit</pre>
+I did not notice the difference and used <code> {() => println("completed")} </code> in each case. That prints the expected output for fromCallback but is not executed for pushee. The compiler does not generate any errors, making this a completely silent failure. Thanks to <a href="https://groups.google.com/forum/?fromgroups#!searchin/play-framework/pushee/play-framework/KmbjwlJUe50/ddVqKTV0tyUJ">sadek</a> for pointing out my error.
+
+The next step was to gain a better understanding of this corner of the Scala language
+
+{% highlight scala %}
+def f(a: => Unit){a}
+def g(a:() => Unit){a()}
+def h(a: => String)={a}
+def i(a:() => String)={a()}
+
+f{println("1")}
+f{() => println("2")}
+g{() => println("3")}
+println(h{"5"})
+println(h{()=>"6"})
+println(i{() => "7"})
+{% endhighlight %}
+The result is</pre>
+1
+3
+5
+<console>:9: error: type mismatch;
+found : () => java.lang.String
+required: String
+println(h{()=>"6"})
+^
+7
+
+So there is something special about <code>() => Unit</code>

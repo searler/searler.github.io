@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>Exhaustive Scala Enum</title>
+        <meta name="viewport" content="width=device-width">
+
+        <!-- syntax highlighting CSS -->
+        <link rel="stylesheet" href="/css/syntax.css">
+
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="/css/main.css">
+
+    </head>
+    <body>
+
+        <div class="site">
+          <div class="header">
+            <h1 class="title"><a href="/">Your New Jekyll Site</a></h1>
+            <a class="extra" href="/">home</a>
+          </div>
+
+          <h2>Exhaustive Scala Enum</h2>
+<p class="meta">24 Jul 2011</p>
+
+<div class="post">
+This interesting <a href="http://klangism.tumblr.com/post/7098500142/diy-exhaustiveness-checking-on-scala-enums">post</a> describes how to define an enum in Scala such that the compiler will flag a failure to exhaustively cover all the options. It also provides an implementation of <em>values</em>, which is often very useful.
+
+However, I found the gist did not function under either Scala 2.8.1 or 2.9.0-1. The compiler would falsely indicate that not all options were covered.  Using objects rather than vals resolved the problem.
+
+Arguably this is a clearer representation since Enum values are singletons.  It also avoids some of the "boilerplate" nature of the vals implementation, while retaining the compiler checking.
+<pre>object Foos extends Enum {
+  sealed trait EnumVal extends Value
+  object F extends EnumVal { val name = "F" }
+  object X extends EnumVal { val name = "X" }
+}</pre>
+Unfortunately, this implementation does not populate the <em>values</em> until each object is explicitly referenced.
+
+</div>
+
+
+          <div class="footer">
+            <div class="contact">
+              <p>
+                Your Name<br />
+                What You Are<br />
+                you@example.com
+              </p>
+            </div>
+            <div class="contact">
+              <p>
+                <a href="https://github.com/yourusername">github.com/yourusername</a><br />
+                <a href="https://twitter.com/yourusername">twitter.com/yourusername</a><br />
+              </p>
+            </div>
+          </div>
+        </div>
+
+    </body>
+</html>

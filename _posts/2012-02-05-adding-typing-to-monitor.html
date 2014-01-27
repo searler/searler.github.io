@@ -1,0 +1,35 @@
+---
+layout: post
+title: Adding typing to Monitor
+categories:
+- Akka
+- Scala
+tags: []
+status: publish
+type: post
+published: true
+meta: {}
+---
+The<em> phantom type</em> idiom can help to solve the difficulty of distinguishes Monitors that wrap the same type. Type erasure unfortunately limits its usefulness.
+
+A bettter approach is to create a case class for each type, using inheritance to provide the boilerplate.
+<pre>abstract class BaseMonitor[T, S](implicit p: S => T) {
+  def s: S
+  private val v = p(s)
+  def apply[R](f: T => R) = synchronized { f(v) }
+}</pre>
+Example
+<pre>    implicit def toDom(s: String): Document = (DocumentBuilderFactory.newInstance().newDocumentBuilder()).parse(new InputSource(new StringReader(s)))
+
+    case class XA(s: String) extends BaseMonitor[org.w3c.dom.Document, String]
+
+    val mdoc = XA("value")
+    mdoc { _.getDocumentElement.getTextContent } must beEqualTo("value")</pre>
+Note that the only field in the case class must be named<strong> s</strong> to match the abstract method in BaseMonitor.
+
+The common BaseMonitor type structure can be extracted as follows
+<pre>
+ type XML = BaseMonitor[org.w3c.dom.Document, String]
+ case class XA(s: String) extends XML
+ case class XB(s: String) extends XML
+</pre>

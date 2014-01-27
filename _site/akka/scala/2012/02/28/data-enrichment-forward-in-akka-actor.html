@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>Data enrichment "forward" in Akka actor</title>
+        <meta name="viewport" content="width=device-width">
+
+        <!-- syntax highlighting CSS -->
+        <link rel="stylesheet" href="/css/syntax.css">
+
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="/css/main.css">
+
+    </head>
+    <body>
+
+        <div class="site">
+          <div class="header">
+            <h1 class="title"><a href="/">Your New Jekyll Site</a></h1>
+            <a class="extra" href="/">home</a>
+          </div>
+
+          <h2>Data enrichment "forward" in Akka actor</h2>
+<p class="meta">28 Feb 2012</p>
+
+<div class="post">
+The Akka  <a href="http://akka.io/docs/akka/snapshot/scala/actors.html#forward-message">forward</a> operation redirects a message to another actor, with any response flowing back to the originator of the message. This suffices if another actor can better process the message and the original message still suffices to describe the desired operation. This is not always the case:
+<ol>
+	<li>The second actor might require additional context from the forwarding actor</li>
+	<li>The forwarding actor might provide <a href="http://eaipatterns.com/DataEnricher.html">data enrichment</a>.</li>
+</ol>
+The <a href="http://akka.io/docs/akka/snapshot/scala/actors.html#tell-fire-forget">tell</a> actually accepts a second argument to specify the actor to which the response will be sent. That is normally the entity that invokes the tell operation but can actually be any actor. The tell operation can then be used to send on an augmented message  while retaining the originator actor.
+
+The following code provides a (silly) example of how this might be used
+<pre>case class DataEnrichmentActor extends Actor {
+ def receive = {
+   case msg ⇒ context.actorFor("/user/second").tell("enrichment"+msg,sender)
+ }
+}</pre>
+
+</div>
+
+
+          <div class="footer">
+            <div class="contact">
+              <p>
+                Your Name<br />
+                What You Are<br />
+                you@example.com
+              </p>
+            </div>
+            <div class="contact">
+              <p>
+                <a href="https://github.com/yourusername">github.com/yourusername</a><br />
+                <a href="https://twitter.com/yourusername">twitter.com/yourusername</a><br />
+              </p>
+            </div>
+          </div>
+        </div>
+
+    </body>
+</html>

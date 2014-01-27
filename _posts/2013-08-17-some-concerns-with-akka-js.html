@@ -1,0 +1,23 @@
+---
+layout: post
+title: Some concerns with akka.js
+categories: []
+tags: []
+status: publish
+type: post
+published: true
+meta:
+  _publicize_pending: '1'
+  geo_public: '0'
+---
+The <a href="https://github.com/teamon/akka.js">akka.js </a> project provides a direct linkage from angular.js to Akka and was referenced by <a href="https://twitter.com/jboner/status/273490727076503552">Jonas Boner</a>.
+
+However, there are some concerns with architecture and the implementation. The latter would be irrelevant if this project is merely a POC.
+<ol>
+	<li>The WebSocketClientStore object contains a mutable Map shared between two actors.</li>
+	<li>ActorRefs are added to the Map, but never removed.</li>
+	<li>The akka module contains a replyTo  map, to which a promise is added, but never removed.</li>
+	<li>The actor <em>protocol</em> is defined in terms of JsonObject, which are essentially untyped.</li>
+	<li>The Akka actors are directly exposed to untrustworthy client code, without an mechanism for authentication, authorization, etc.</li>
+</ol>
+&nbsp;

@@ -1,0 +1,45 @@
+---
+layout: post
+title: Working around Scala parser memory leak.
+categories: []
+tags: []
+status: publish
+type: post
+published: true
+meta:
+  _publicize_pending: '1'
+---
+This <a href="https://issues.scala-lang.org/browse/SI-4929">ticket</a> covers an ongoing issue with the parser combinators. The last fix replaced the thread safety issue with a memory leak.That was unfortunate since it fairly easy to deal with the thread safety limitation. Resolving the memory leak requires more heroic efforts, illustrated by this <a href="https://github.com/NET-A-PORTER/scala-uri/commit/2541904066a6be114be884a0c75b5f72cb00959a">code</a>.
+
+This issue has forced me to remain on Scala 2.9.x, which is becoming less tenable as time passes. The ticket implies that 2.11 will contain a fix, but there is no evidence of any change in the current code.
+
+Reworking the code to use the phrase combinator side-steps the memory leak and allows an upgrade to Scala 2.10.x
+
+{% highlight scala %}
+def rawParse(reader: Reader[Char]) = parse(rootParser, reader)
+{% endhighlight %}
+
+becomes
+
+{% highlight scala %}
+def rawParse(reader: Reader[Char]) = {
+ parse(phrase(capture(rootParser) ~ dropDead), reader) match {
+ case Success(wrapped, _) =>
+ wrapped match {
+ case result ~ in => result match {
+ case ns : NoSuccess => ns
+ case _ => Success(result, in)
+ }
+ }
+ case ns: NoSuccess => ns //should not be seen
+ }
+
+private val dropDead = Parser { in => Success(in, new CharSequenceReader("")) }
+
+private def capture[T](p: => Parser[T]) = Parser { in =>
+ p(in) match {
+ case ns : NoSuccess => Success(ns,in)
+ case _ @ s => s
+ }
+ }
+{% endhighlight %}

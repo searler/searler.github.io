@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>Outlining the flow implementation infrastructure</title>
+        <meta name="viewport" content="width=device-width">
+
+        <!-- syntax highlighting CSS -->
+        <link rel="stylesheet" href="/css/syntax.css">
+
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="/css/main.css">
+
+    </head>
+    <body>
+
+        <div class="site">
+          <div class="header">
+            <h1 class="title"><a href="/">Your New Jekyll Site</a></h1>
+            <a class="extra" href="/">home</a>
+          </div>
+
+          <h2>Outlining the flow implementation infrastructure</h2>
+<p class="meta">04 Apr 2011</p>
+
+<div class="post">
+This entry expands on the implementation of the Actor within which the flow will execute. The complete implementation is fairly complex, especially once structured to permit the usage of different actor libraries.
+
+We will thus start with a simple implementation that illustrates the principles. It does not use any actors and is based on the <code>InlineProcessor</code> used for synchronous unit tests. Only linear flows (without any parallelism) can be evaluated.
+
+<code>finalResult</code> captures the value contained within <code>Result</code> and is the value computed by the completed workflow.
+
+<code>pfs</code> contains the RPF that is awaiting responses from sub-services that would permit it to execute. A serial flow (as in examples covered in early entries) would have only one outstanding RPF. A list is required to permit parallel invocation of sub-services.
+
+The core <code>receive</code> method expects
+<ul>
+	<li>tuple containing a CI and response value from the sub-service that has completed its processingThe <code>pfs</code> RPF is expected to match the CI and its contained function is evaluated with the response value to compute the next RPF. A <code>Result</code> value indicates the completion of the flow and its value is recorded for future reference (by the initiating test code). Any other value is an RPF for which a response is expected.</li>
+	<li>The first RPF of the flow to be executed.This is simply assigned to <code>pfs</code>. This RPF is computed by evaluating the flow.</li>
+</ul>
+<pre class="sourceCode"><code class="sourceCode scala"><span class="kw">class</span> SimpleExecutor{
+  <span class="kw">var</span> finalResult:Any = _
+  <span class="kw">var</span> pfs:RPF = _
+  <span class="kw">def</span> receive:PartialFunction[Any,Unit] = {
+         <span class="kw">case</span> (ci:CI,r:Any) => <span class="fu">process</span>(ci,r)
+         <span class="kw">case</span> f:RPF => pfs = f
+   }
+   <span class="kw">private</span> <span class="kw">def</span> <span class="fu">process</span>(ci:CI,in:Any){
+     pfs.<span class="fu">apply</span>(ci)(in) <span class="kw">match</span> {
+        <span class="kw">case</span> Result(r) => finalResult = r
+        <span class="kw">case</span> r:RPF => pfs = r
+     }
+   }
+}</code></pre>
+The above code is passive, so we need a <em>runtime</em> to drive it through its pace.
+
+<code>response</code> records the result of the most recent sub-service invocation. <code>Doubler</code> illustrates how that interaction occurs.
+
+The object creates an instance of <code>SimpleExecutor</code>, feeding it the result of evaluating the flow (which returns the first RPF). Each response from the sub-services are then feed to the instance to drive its flow, until it computes the final result.
+
+A copy of <code>response</code> is required since <code>process receive</code> will cause <code>response</code> to be indirectly modified.
+<pre class="sourceCode"><code class="sourceCode scala"><span class="kw">object</span> InlineProcessor {
+
+  <span class="kw">var</span> response:(CI,Int) = _
+
+   <span class="kw">def</span> apply[A](flow:A=>RPF,initial:A) = {
+      <span class="kw">val</span> processor = <span class="kw">new</span> SimpleExecutor
+      processor receive <span class="fu">Trigger</span>(<span class="fu">flow</span>(initial))
+
+      <span class="kw">while</span>(processor.<span class="fu">finalResult</span> == <span class="kw">null</span>){
+         <span class="kw">val</span> copy = response
+         processor receive copy
+      }
+    processor.<span class="fu">finalResult</span>
+  }
+
+   <span class="kw">object</span> Doubler <span class="kw">extends</span> Lookup[Int,Int]{
+       <span class="kw">protected</span> <span class="kw">def</span> <span class="fu">call</span>(arg:Int):CI = {
+           <span class="kw">val</span> ci = <span class="fu">CorrelationAllocator</span>()
+           response = ci->arg*<span class="dv">2</span>
+           ci
+       }
+   }
+</code>
+<code class="sourceCode scala">}</code></pre>
+A simple example flow that uses a Lookup to map an Int into some other Int.
+<pre class="sourceCode"><code class="sourceCode scala"><span class="kw">def</span> <span class="fu">flow</span>(lookup:Lookup[Int,Int]) = {arg:Int => <span class="fu">lookup</span>(arg){Result(_)}}</code></pre>
+Use the above infrastructure to execute the flow with the Doubler lookup for the value 12.
+<pre class="sourceCode"><code class="sourceCode scala"><span class="fu">InlineProcessor</span>(<span class="fu">flow</span>(InlineProcessor.<span class="fu">Doubler</span>),<span class="dv">12</span>)</code></pre>
+
+</div>
+
+
+          <div class="footer">
+            <div class="contact">
+              <p>
+                Your Name<br />
+                What You Are<br />
+                you@example.com
+              </p>
+            </div>
+            <div class="contact">
+              <p>
+                <a href="https://github.com/yourusername">github.com/yourusername</a><br />
+                <a href="https://twitter.com/yourusername">twitter.com/yourusername</a><br />
+              </p>
+            </div>
+          </div>
+        </div>
+
+    </body>
+</html>

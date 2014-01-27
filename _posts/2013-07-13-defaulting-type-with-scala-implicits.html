@@ -1,0 +1,25 @@
+---
+layout: post
+title: Defaulting type with Scala implicits
+categories:
+- Scala
+tags: []
+status: publish
+type: post
+published: true
+meta:
+  geo_public: '0'
+  _publicize_pending: '1'
+---
+This <a href="http://stackoverflow.com/questions/4403906/is-it-possible-in-scala-to-force-the-caller-to-specify-a-type-parameter-for-a-po/6629984#6629984">stackoverflow answer</a> shows how a default type can be specified, using some interesting side effects of the Scala implicit rules.
+
+Scala 2.10.1 allows the code to be further simplified
+
+{% highlight scala %}object DefaultsTo {
+ implicit def default[B] = new DefaultsTo[B, B]
+ implicit def overrideDefault[A,B] = new DefaultsTo[A,B]
+}{% endhighlight %}
+
+The <code> T DefaultsTo Node</code> looks rather strange but is actually the infix form of DefaultsTo[T,Node]
+
+&nbsp;

@@ -1,0 +1,35 @@
+---
+layout: post
+title: scalaz contrib and Futures
+categories:
+- Scala
+- scalaz
+tags: []
+status: publish
+type: post
+published: true
+meta:
+  geo_public: '0'
+  _publicize_pending: '1'
+---
+The canonical combined Future example is
+
+{% highlight scala %}
+def c(i:Int):Future[Int] = ...
+val f1 = c(5)
+val f2 = c(2)
+for{
+i1 <- f1
+i2 <- f2
+}
+yield i1+i2{% endhighlight %}
+
+Creating the Futures within the for-comprehension would be much tidier, but then they would execute sequentially ruining the entire purpose.
+
+The scalaz contrib project provides support for Scala 2.10 futures, allowing more expressive coding for some tasks.
+
+This applicative functor expression is equivalent to the above code.
+
+{% highlight scala %}val r:Future[Int] = (c(5) |@| c(1))(_ + _){% endhighlight %}
+
+&nbsp;

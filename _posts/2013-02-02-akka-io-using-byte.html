@@ -1,0 +1,57 @@
+---
+layout: post
+title: Akka IO using byte[]
+categories: []
+tags: []
+status: publish
+type: post
+published: true
+meta:
+  _publicize_pending: '1'
+  _oembed_672b540f74711f69df3de417bc7558e5: '{{unknown}}'
+  _oembed_18e162087a044db574a9938d89fa9ba1: '{{unknown}}'
+  _oembed_e3e2b278148596095b3074af1b8d45e6: '{{unknown}}'
+---
+<a href="http://www.kotancode.com/2013/02/02/sending-and-receiving-google-protocol-buffers-via-akka-io-and-scala/">http://www.kotancode.com/2013/02/02/sending-and-receiving-google-protocol-buffers-via-akka-io-and-scala/</a>
+
+Used the code from <a href="http://cognitiveentity.wordpress.com/2012/03/10/akka-system-io-client/">http://cognitiveentity.wordpress.com/2012/03/10/akka-system-io-client/</a> and <a href="http://cognitiveentity.wordpress.com/2012/02/23/simpler-akka-io-example/">http://cognitiveentity.wordpress.com/2012/02/23/simpler-akka-io-example/</a> to send data serialized using ProtoBufs
+
+These examples are all string based, primarily to make the code easy to test with curl.
+
+The string representation of the length can be replaced with its 4 byte binary representation.
+The payload is still a byte[], derived from a String for convenience
+<h2>Client</h2>
+{% highlight scala %}
+
+
+case s: String => handle.foreach {
+h =>
+val bb = ByteBuffer.allocate(4)
+bb.putInt(s.length)
+bb.flip
+h write ByteString(bb)
+h write ByteString(s.getBytes("US-ASCII"))
+ }
+
+{% endhighlight %}
+<h2>Server</h2>
+&nbsp;
+
+{% highlight scala %}
+
+
+def readMessage: IO.Iteratee[String] =
+for {
+lengthBytes <- take(4)
+len = lengthBytes.asByteBuffer.getInt()
+bytes <- take(len)
+} yield {
+ascii(bytes)
+}
+}
+
+{% endhighlight %}
+
+&nbsp;
+
+&nbsp;

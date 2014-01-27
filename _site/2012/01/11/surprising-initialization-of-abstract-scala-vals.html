@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>Surprising initialization of abstract Scala vals</title>
+        <meta name="viewport" content="width=device-width">
+
+        <!-- syntax highlighting CSS -->
+        <link rel="stylesheet" href="/css/syntax.css">
+
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="/css/main.css">
+
+    </head>
+    <body>
+
+        <div class="site">
+          <div class="header">
+            <h1 class="title"><a href="/">Your New Jekyll Site</a></h1>
+            <a class="extra" href="/">home</a>
+          </div>
+
+          <h2>Surprising initialization of abstract Scala vals</h2>
+<p class="meta">11 Jan 2012</p>
+
+<div class="post">
+Consider the problem of computing deltas between entries in a stream of events.  Each event is paired with the previous value and delivered to a derived implementation. This requires an initial value to be paired with initial value, what might be called the <em>zero</em>.
+
+<div class="highlight"><pre><code class="scala"><span class="k">package</span> <span class="nn">function</span>
+<span class="k">trait</span> <span class="nc">Delta</span><span class="o">[</span><span class="kt">T</span><span class="o">]</span> <span class="o">{</span>
+   <span class="k">def</span> <span class="n">zero</span><span class="k">:</span> <span class="kt">T</span>
+   <span class="k">private</span> <span class="k">var</span> <span class="n">before</span><span class="k">:</span> <span class="kt">T</span> <span class="o">=</span> <span class="n">zero</span>
+   <span class="k">def</span> <span class="n">update</span><span class="o">(</span><span class="n">current</span><span class="k">:</span> <span class="kt">T</span><span class="o">)</span> <span class="o">{</span>
+      <span class="k">if</span> <span class="o">(</span><span class="n">before</span> <span class="o">!=</span> <span class="n">current</span><span class="o">)</span> <span class="o">{</span>
+         <span class="n">delta</span><span class="o">(</span><span class="n">before</span><span class="o">,</span> <span class="n">current</span><span class="o">)</span>
+         <span class="n">before</span> <span class="k">=</span> <span class="n">current</span>
+      <span class="o">}</span>
+   <span class="o">}</span>
+   <span class="k">def</span> <span class="n">delta</span><span class="o">(</span><span class="n">before</span><span class="k">:</span> <span class="kt">T</span><span class="o">,</span> <span class="n">current</span><span class="k">:</span> <span class="kt">T</span><span class="o">)</span>
+<span class="o">}</span>
+</code></pre></div>
+
+In the above code, the zero is provided by an abstract function.
+
+The implementation might then be
+
+<div class="highlight"><pre><code class="scala"><span class="k">case</span> <span class="k">class</span> <span class="nc">StringDelta</span> <span class="k">extends</span> <span class="nc">Delta</span><span class="o">[</span><span class="kt">String</span><span class="o">]</span> <span class="o">{</span>
+<span class="k">def</span> <span class="n">zero</span> <span class="k">=</span> <span class="s">&quot;&quot;</span>
+<span class="k">def</span> <span class="n">delta</span><span class="o">(</span><span class="n">before</span><span class="k">:</span> <span class="kt">String</span><span class="o">,</span> <span class="n">current</span><span class="k">:</span> <span class="kt">String</span><span class="o">)</span> <span class="o">{</span>
+      <span class="n">println</span><span class="o">(</span><span class="n">before</span><span class="o">,</span> <span class="n">current</span><span class="o">)</span>
+   <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+
+&nbsp;
+
+This works fine, but looks a little odd. The zero is a constant, which one might expect to be defined using a <em>val</em>. Changing <em>def zero</em> to <em>val zero</em> compiles (Scala permits abstract vals) but the run-time value is actually <strong>null</strong>.
+
+Changing the definition to be lazy, i.e.<em> lazy val zero = "" , </em>restores the desired behavior. The underlying implementation of lazy is obviously rather similar to def, being executed on first reference to the name.
+
+&nbsp;
+
+&nbsp;
+
+</div>
+
+
+          <div class="footer">
+            <div class="contact">
+              <p>
+                Your Name<br />
+                What You Are<br />
+                you@example.com
+              </p>
+            </div>
+            <div class="contact">
+              <p>
+                <a href="https://github.com/yourusername">github.com/yourusername</a><br />
+                <a href="https://twitter.com/yourusername">twitter.com/yourusername</a><br />
+              </p>
+            </div>
+          </div>
+        </div>
+
+    </body>
+</html>

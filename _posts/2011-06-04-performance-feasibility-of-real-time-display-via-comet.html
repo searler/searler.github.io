@@ -1,0 +1,25 @@
+---
+layout: post
+title: Performance feasibility of "Real time" display via comet
+categories:
+- lift
+- Scala
+tags: []
+status: publish
+type: post
+published: true
+meta: {}
+---
+Chat and stock tickers are the canonical <a title="Comet" href="http://en.wikipedia.org/wiki/Comet_(programming)">Comet</a> applications. The latter indicates that web applications might be able to implement "real time" applications that are currently the domain of Swing and SWT applications. For example: process control mimic panels, network status displays, etc.
+
+<a title="Lift" href="http://liftweb.net/">Lift</a> provides a very easy to use Comet implementation that is particularly well suited to these problem domains. A trivial test of feasibility was created from the <a title="Clock" href="http://demo.liftweb.net/interactive">Clock</a> example code, modified as follows:
+<ul>
+	<li>two actors per page</li>
+	<li>each actor updating 10 text labels</li>
+	<li>10 Hz refresh</li>
+</ul>
+The test environment is a single dual core 2.8 Ghz processor, running both the Jetty server and the browser.
+
+<span class="Apple-style-span" style="font-size:medium;">Chrome javascript console indicates each Comet request has ~ 14ms latency, which is impressive. </span>
+
+The CPU load is much less impressive: > 50 % of a one core.   This is surprisingly large, but certainly acceptable for a direct replacement of a Swing/SWT application where the machine is dedicated to a single user.  The Jetty server load increases slowly with additional clients, allowing a dozen or so clients to be supported from a single server.  This is more than sufficient for the domains of interest.

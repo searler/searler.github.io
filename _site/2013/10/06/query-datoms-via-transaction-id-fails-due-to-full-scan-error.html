@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>Query datoms via transaction id fails due to full scan error</title>
+        <meta name="viewport" content="width=device-width">
+
+        <!-- syntax highlighting CSS -->
+        <link rel="stylesheet" href="/css/syntax.css">
+
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="/css/main.css">
+
+    </head>
+    <body>
+
+        <div class="site">
+          <div class="header">
+            <h1 class="title"><a href="/">Your New Jekyll Site</a></h1>
+            <a class="extra" href="/">home</a>
+          </div>
+
+          <h2>Query datoms via transaction id fails due to full scan error</h2>
+<p class="meta">06 Oct 2013</p>
+
+<div class="post">
+The recent versions of datomic provide a  <a href="http://docs.datomic.com/log.html">log</a> interface that provides access to the transactions that have been processed.
+That interface is unfortunately not implemented for memory databases, which complicates testing.
+
+The datoms stored by Datomic are quads, which include the identity of the transaction.
+It is thus possible to locate datoms asserted by a specific transaction
+<pre>[:find ?e ?name  :in $ ?t  :where [ ?e :person/name ?name ?t]]</pre>
+will locate all datoms that asserted a person's name for a transaction id:t
+
+One might then expect this would retrieve all the datoms asserted for a transaction
+<pre>[:find ?e ?a ?v  :in $ ?t  :where [ ?e ?a ?v ?t]]</pre>
+That query fails with "Insufficient binding of db clause: [?e ?a ?v ?t] would cause full scan".
+
+Which would make sense if datomic does not provide an index over transaction id.
+However, it is not clear how the log interface can provide reasonable performance w/o that index.
+
+&nbsp;
+
+&nbsp;
+
+&nbsp;
+
+</div>
+
+
+          <div class="footer">
+            <div class="contact">
+              <p>
+                Your Name<br />
+                What You Are<br />
+                you@example.com
+              </p>
+            </div>
+            <div class="contact">
+              <p>
+                <a href="https://github.com/yourusername">github.com/yourusername</a><br />
+                <a href="https://twitter.com/yourusername">twitter.com/yourusername</a><br />
+              </p>
+            </div>
+          </div>
+        </div>
+
+    </body>
+</html>

@@ -1,0 +1,18 @@
+---
+layout: post
+title: akka, camel and UuidGenerator surprises
+categories: []
+tags: []
+status: publish
+type: post
+published: true
+meta:
+  _wp_old_slug: ''
+---
+A test using Akka 1.0 to implement a request-response JMS interaction failed with a missing class:org.apache.camel.util.UuidGenerator
+
+The Camel <a title="documentation" href="http://camel.apache.org/uuidgenerator.html">documentation</a> does not really explain why this occurs since it references other classes and indicates UuidGenerator is not the default. The source of the error thus remains a mystery.
+
+The solution is fortunately straightforward, using the following code to explicitly specify the generator
+<pre>CamelContextManager.mandatoryContext.
+setUuidGenerator(new org.apache.camel.impl.SimpleUuidGenerator)</pre>

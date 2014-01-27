@@ -1,0 +1,40 @@
+---
+layout: post
+title: LMAX Disruptor and h.264 processing
+categories: []
+tags: []
+status: publish
+type: post
+published: true
+meta:
+  _publicize_pending: '1'
+---
+A recent project required the decryption of an<a href="http://en.wikipedia.org/wiki/MPEG_transport_stream"> MPEG TS</a> multicast stream.
+
+The first attempt simply looped, reading from a <a href="http://docs.oracle.com/javase/7/docs/api/java/nio/channels/MulticastChannel.html">MulticastChannel</a> , decrypting with a <a href="http://docs.oracle.com/javase/7/docs/api/javax/crypto/Cipher.html">Cipher</a> and writing via a <a href="http://docs.oracle.com/javase/7/docs/api/java/nio/channels/DatagramChannel.html">DatagramChannel</a>.
+The decryption turned out to have negligible cost, which was surprising.
+
+Unfortunately, this simple implementation dropped too many packets. The resultant video  was unwatchable, being riddled with artifacts.
+
+Some buffering was obviously required.
+
+The standard <a href="http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/package-summary.html">j.u.c</a> classes did not resolve the problem. Packet loss remained a problem, perhaps due to the ongoing garbage collection.
+
+The<a href="http://lmax-exchange.github.com/disruptor/"> LMAX Disruptor </a>provides a ring buffer containing preallocated elements, eliminating GC.
+Its design provides very small and consistency latency,<a href="http://code.google.com/p/disruptor/wiki/PerformanceResults"> orders of magnitude better </a>than <a href="http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ArrayBlockingQueue.html">ArrayBlockingQueue</a>.
+
+A simple two thread design turned out to suffice :
+<ol>
+	<li><span style="line-height:13px;">Blocking read packet into ByteBuffer in the ring buffer</span></li>
+	<li>Decrypt ByteBuffer in-place  and transmit from the ring buffer.</li>
+</ol>
+This approach generates zero garbage.
+
+Any other design caused packet loss. That includes separating the decryption into a third thread.
+
+The scheduling of the reading thread appears to be be the primary factor in avoiding packet loss. The system thus works best when there are more free cores than active threads. Further improvement would require manipulation of the scheduler, e.g. by pinning the thread to a specific core.
+
+The result was very pleasing, requiring less than 100 LOSC.
+A quad core 3.5 GHz Xeon suffices to handle four 1080P 30 Hz signals encrypted using AES-128.
+
+&nbsp;

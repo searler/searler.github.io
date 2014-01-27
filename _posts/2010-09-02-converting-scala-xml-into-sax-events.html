@@ -1,0 +1,115 @@
+---
+layout: post
+title: Converting Scala XML into SAX events
+categories:
+- Scala
+tags: []
+status: publish
+type: post
+published: true
+meta:
+  _wp_old_slug: ''
+---
+This object generates SAX events from Scala XML to the provided ContentHandler.
+If the target also implements LexicalHandler then comments are included.
+
+{% highlight scala %}
+import scala.xml._
+import org.xml.sax.ext.LexicalHandler
+import org.xml.sax._
+import org.xml.sax.helpers._
+
+import scala.xml.Utility._
+
+object XMLDumper{
+
+   def toXML(
+    x: Node,
+    target: ContentHandler,
+    pscope: NamespaceBinding = TopScope)
+  {
+    val lexical = if(target.isInstanceOf[LexicalHandler]) target.asInstanceOf[LexicalHandler] else null
+
+     target.startDocument
+
+    x match {
+      case c: Comment => if (lexical != null) lexical.comment(c.commentText.toCharArray,0,c.commentText.length)
+      case a: Atom[_] =>  { val s = a text; target.characters(s.toCharArray,0,s.length) } 
+      case e: EntityRef =>  { val s = e text; target.characters(s.toCharArray,0,s.length) } 
+      case  p:ProcInstr => target.processingInstruction(p.target,p.proctext)
+      case g: Group =>
+        g.nodes foreach {toXML(_, target, x.scope)}
+      case _  =>
+        val uri = x.namespace
+        val localName = x.label
+        val qName = if(x.prefix == null) localName else x.prefix + ":" + localName
+
+        val atts = new AttributesImpl() 
+        if(x.attributes != null) toXML(x.attributes,atts)
+        
+        startPrefix(x.scope,pscope,target)
+        target.startElement(uri,localName,qName,atts)  
+          x.child foreach {toXML(_, target, x.scope)}
+        target.endElement(uri,localName,qName) 
+        endPrefix(x.scope,pscope,target)  
+    }
+    target.endDocument
+  }
+
+  private def startPrefix(ns:NamespaceBinding,stop:NamespaceBinding,target:ContentHandler){
+     if(ns ne stop){
+        target.startPrefixMapping(if(ns.prefix==null) "" else ns.prefix,ns.uri);
+         startPrefix(ns.parent, stop,target)
+     }
+  }
+
+  private def endPrefix(ns:NamespaceBinding,stop:NamespaceBinding,target:ContentHandler){
+     if(ns ne stop){
+       target.endPrefixMapping(if(ns.prefix==null) "" else ns.prefix);
+       endPrefix(ns.parent, stop,target)
+     }
+  }
+
+  private def toXML(att:MetaData,atts:AttributesImpl){
+     att match  {
+        case pa:PrefixedAttribute =>  atts.addAttribute(null,pa.key,pa.pre+":"+pa.key,"CDATA",toString(pa.value))
+        case ua:UnprefixedAttribute =>  atts.addAttribute(null,ua.key,ua.key,"CDATA",toString(ua.value))
+        case Null =>  //ignored
+     }
+     if(att hasNext)
+       toXML(att.next,atts)
+  }
+
+  private def toString(ns:Seq[Node]) = {
+     val sb = new StringBuilder
+     ns foreach {_ match { 
+          case a: Atom[_] => sb.append(a.text)
+          case e:EntityRef => sb.append(e.text)
+        }
+      }
+     sb.toString
+  }
+
+} 
+{% endhighlight %}
+
+With example usage
+
+{% highlight scala %}
+import java.io._
+import javax.xml.parsers._
+import javax.xml.transform._
+import javax.xml.transform.sax._
+import javax.xml.transform.stream._
+
+object XMLDumperDriver extends Application{
+
+val transformerFactory = (TransformerFactory.newInstance).asInstanceOf[SAXTransformerFactory]
+val xformer = transformerFactory.newTransformerHandler
+xformer.setResult(new StreamResult(System.out))
+
+  val xml = <Outside> <Y xmlns="http://y"/> <X a="12" c="21" xmlns:h="http://com.com" xmlns:q="http://q"  >xxx &amp;lt; <y xmlns:g="http://example.com"  h:b="13"/> </X> </Outside>
+
+ XMLDumper.toXML(xml,xformer)
+}
+{% endhighlight %}

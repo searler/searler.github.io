@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>scalaz contrib and Futures</title>
+        <meta name="viewport" content="width=device-width">
+
+        <!-- syntax highlighting CSS -->
+        <link rel="stylesheet" href="/css/syntax.css">
+
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="/css/main.css">
+
+    </head>
+    <body>
+
+        <div class="site">
+          <div class="header">
+            <h1 class="title"><a href="/">Your New Jekyll Site</a></h1>
+            <a class="extra" href="/">home</a>
+          </div>
+
+          <h2>scalaz contrib and Futures</h2>
+<p class="meta">24 Jul 2013</p>
+
+<div class="post">
+The canonical combined Future example is
+
+<div class="highlight"><pre><code class="scala"><span class="k">def</span> <span class="n">c</span><span class="o">(</span><span class="n">i</span><span class="k">:</span><span class="kt">Int</span><span class="o">)</span><span class="k">:</span><span class="kt">Future</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="k">=</span> <span class="o">...</span>
+<span class="k">val</span> <span class="n">f1</span> <span class="k">=</span> <span class="n">c</span><span class="o">(</span><span class="mi">5</span><span class="o">)</span>
+<span class="k">val</span> <span class="n">f2</span> <span class="k">=</span> <span class="n">c</span><span class="o">(</span><span class="mi">2</span><span class="o">)</span>
+<span class="k">for</span><span class="o">{</span>
+<span class="n">i1</span> <span class="k">&lt;-</span> <span class="n">f1</span>
+<span class="n">i2</span> <span class="k">&lt;-</span> <span class="n">f2</span>
+<span class="o">}</span>
+<span class="k">yield</span> <span class="n">i1</span><span class="o">+</span><span class="n">i2</span>
+</code></pre></div>
+
+Creating the Futures within the for-comprehension would be much tidier, but then they would execute sequentially ruining the entire purpose.
+
+The scalaz contrib project provides support for Scala 2.10 futures, allowing more expressive coding for some tasks.
+
+This applicative functor expression is equivalent to the above code.
+
+<div class="highlight"><pre><code class="scala"><span class="k">val</span> <span class="n">r</span><span class="k">:</span><span class="kt">Future</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="k">=</span> <span class="o">(</span><span class="n">c</span><span class="o">(</span><span class="mi">5</span><span class="o">)</span> <span class="o">|@|</span> <span class="n">c</span><span class="o">(</span><span class="mi">1</span><span class="o">))(</span><span class="k">_</span> <span class="o">+</span> <span class="k">_</span><span class="o">)</span>
+</code></pre></div>
+
+&nbsp;
+
+</div>
+
+
+          <div class="footer">
+            <div class="contact">
+              <p>
+                Your Name<br />
+                What You Are<br />
+                you@example.com
+              </p>
+            </div>
+            <div class="contact">
+              <p>
+                <a href="https://github.com/yourusername">github.com/yourusername</a><br />
+                <a href="https://twitter.com/yourusername">twitter.com/yourusername</a><br />
+              </p>
+            </div>
+          </div>
+        </div>
+
+    </body>
+</html>

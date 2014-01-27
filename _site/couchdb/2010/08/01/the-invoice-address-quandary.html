@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>The invoice address quandary</title>
+        <meta name="viewport" content="width=device-width">
+
+        <!-- syntax highlighting CSS -->
+        <link rel="stylesheet" href="/css/syntax.css">
+
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="/css/main.css">
+
+    </head>
+    <body>
+
+        <div class="site">
+          <div class="header">
+            <h1 class="title"><a href="/">Your New Jekyll Site</a></h1>
+            <a class="extra" href="/">home</a>
+          </div>
+
+          <h2>The invoice address quandary</h2>
+<p class="meta">01 Aug 2010</p>
+
+<div class="post">
+The attendees at the Dallas TechFest presentation on <a href="http://couchdb.apache.org/">CouchDB</a> were concerned with the apparently lack of normalization in capturing the address as part of an invoice document. Their primary concern was how to change that address when it changes.
+
+That concern appears to reflect an inappropriate approach to data modelling and the type of historical data required for audits and SOX compliance.
+
+The address on the invoice reflects the value that applied at the time the invoice was generated. That address is part of a primary key that identifies the legal entity that was responsible for the invoice. That entity might cease to exist, move, be merged, acquired or divested.  Even the move has non trivial legal consequences since it might impact taxes, export regulations, etc. Maintaining that historical value can be critical.
+
+Ideally the invoice would not indirectly reference the affected legal entity by name+address, but rather by some unique identifier. Some countries define unique identifiers as part of the company registration process, but these (AFAIK) apply to the organization and not to individual locations. A WalMart can impose its own identification scheme on its suppliers. There are organizations that provide identifiers (such as Dun &amp; Bradstreet) but those are limited in scope and potentially costly to acquire and use.
+
+Organizations are thus forced to maintain their own directory of entities (parties) and perform a mapping from name+address to their own identifier. That leaves open the possibility of error, which cannot be resolved if the source name+address was not captured as part of the invoice. This is one reason for the popularity of document scanning and off-site archival systems, so that information can be retrieved if necessary.The cost of storing the textual representation is very much smaller than that of the scanned image or the storage and retrieval of the original paper document.
+
+Auditing concerns would prohibit the modification of the master document.
+
+The perceived CouchDB concern is thus a feature rather than a defect.
+
+</div>
+
+
+          <div class="footer">
+            <div class="contact">
+              <p>
+                Your Name<br />
+                What You Are<br />
+                you@example.com
+              </p>
+            </div>
+            <div class="contact">
+              <p>
+                <a href="https://github.com/yourusername">github.com/yourusername</a><br />
+                <a href="https://twitter.com/yourusername">twitter.com/yourusername</a><br />
+              </p>
+            </div>
+          </div>
+        </div>
+
+    </body>
+</html>

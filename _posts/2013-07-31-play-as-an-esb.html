@@ -1,0 +1,32 @@
+---
+layout: post
+title: Play as an ESB
+categories:
+- play
+- Scala
+tags: []
+status: publish
+type: post
+published: true
+meta:
+  _publicize_pending: '1'
+  geo_public: '0'
+---
+Back in 2007 <a href="http://www.mnot.net/blog/2007/04/29/squid">Mark Nottingham suggested squid could serve as an ESB</a> , which was probably considered a rather radical idea.  Certainly I never came across any further references to the concept.  This<a href="http://www.jamesward.com/2013/07/29/an-alternative-to-required-api-keys"> recent Play blog post </a> triggered my recollection of that half decade old idea.
+
+It has many functions that one might expect from an ESB:
+<ol>
+	<li>Caching</li>
+	<li>Rate limiting (via timeouts and return codes)</li>
+	<li>Proxying (via REST call to external service)</li>
+	<li>Data conversion (http response to json)</li>
+</ol>
+The sample is compact, easily understand and easily extended via composition. (characteristics that are rarely encountered using the big name ESBs)
+
+&nbsp;
+
+&nbsp;
+
+&nbsp;
+
+&nbsp;

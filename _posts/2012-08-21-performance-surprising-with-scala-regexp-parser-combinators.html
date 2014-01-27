@@ -1,0 +1,23 @@
+---
+layout: post
+title: Performance surprising with Scala regexp parser combinators
+categories:
+- Scala
+tags: []
+status: publish
+type: post
+published: true
+meta: {}
+---
+The various <a href="https://wiki.scala-lang.org/display/SW/Parsing">examples</a> generally have the form
+
+<code>def</code> <code>identifier  </code><code>=</code> <code>""</code><code>"[_\p{L}][_\p{L}\p{Nd}]*"</code><code>""</code><code>.r</code>
+
+This works fine, but the underlying Java Pattern is recompiled on every reference.
+
+The behavior came to light during an upgrade from Java 6 and Scala 2.7.7 to Java 7 and Scala 2.9.2, when a ~ 10% performance degradation was noted.
+Performance analysis indicated an unexpected large number of calls to <code>Pattern.compile</code>.
+The Java 7 implementation is evidently somewhat slower.
+
+Changing the def to val resolves the problem, without impact to the semantics.
+In this case, the improvement was greater than 30% which  more than compensates for the degradation.

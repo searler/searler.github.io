@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>Surprises with call-by-name and unary functions</title>
+        <meta name="viewport" content="width=device-width">
+
+        <!-- syntax highlighting CSS -->
+        <link rel="stylesheet" href="/css/syntax.css">
+
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="/css/main.css">
+
+    </head>
+    <body>
+
+        <div class="site">
+          <div class="header">
+            <h1 class="title"><a href="/">Your New Jekyll Site</a></h1>
+            <a class="extra" href="/">home</a>
+          </div>
+
+          <h2>Surprises with call-by-name and unary functions</h2>
+<p class="meta">27 Mar 2012</p>
+
+<div class="post">
+I recently created a subtle defect while using the Play2 <a href="http://scala.playframework.org/documentation/api/2.0/scala/index.html#play.api.libs.iteratee.Enumerator$">enumerators</a>
+
+Both  pushee and fromCallback are passed an onComplete that is executed when the target Iteratee can no longer accept any input. The signatures are slightly different
+<pre>pushee:onComplete: ⇒ Unit
+fromCallback:onComplete: () ⇒ Unit</pre>
+I did not notice the difference and used <code> {() => println("completed")} </code> in each case. That prints the expected output for fromCallback but is not executed for pushee. The compiler does not generate any errors, making this a completely silent failure. Thanks to <a href="https://groups.google.com/forum/?fromgroups#!searchin/play-framework/pushee/play-framework/KmbjwlJUe50/ddVqKTV0tyUJ">sadek</a> for pointing out my error.
+
+The next step was to gain a better understanding of this corner of the Scala language
+
+<div class="highlight"><pre><code class="scala"><span class="k">def</span> <span class="n">f</span><span class="o">(</span><span class="n">a</span><span class="k">:</span> <span class="o">=&gt;</span> <span class="nc">Unit</span><span class="o">){</span><span class="n">a</span><span class="o">}</span>
+<span class="k">def</span> <span class="n">g</span><span class="o">(</span><span class="n">a</span><span class="k">:</span><span class="o">()</span> <span class="o">=&gt;</span> <span class="nc">Unit</span><span class="o">){</span><span class="n">a</span><span class="o">()}</span>
+<span class="k">def</span> <span class="n">h</span><span class="o">(</span><span class="n">a</span><span class="k">:</span> <span class="o">=&gt;</span> <span class="nc">String</span><span class="o">)={</span><span class="n">a</span><span class="o">}</span>
+<span class="k">def</span> <span class="n">i</span><span class="o">(</span><span class="n">a</span><span class="k">:</span><span class="o">()</span> <span class="o">=&gt;</span> <span class="nc">String</span><span class="o">)={</span><span class="n">a</span><span class="o">()}</span>
+
+<span class="n">f</span><span class="o">{</span><span class="n">println</span><span class="o">(</span><span class="s">&quot;1&quot;</span><span class="o">)}</span>
+<span class="n">f</span><span class="o">{()</span> <span class="k">=&gt;</span> <span class="n">println</span><span class="o">(</span><span class="s">&quot;2&quot;</span><span class="o">)}</span>
+<span class="n">g</span><span class="o">{()</span> <span class="k">=&gt;</span> <span class="n">println</span><span class="o">(</span><span class="s">&quot;3&quot;</span><span class="o">)}</span>
+<span class="n">println</span><span class="o">(</span><span class="n">h</span><span class="o">{</span><span class="s">&quot;5&quot;</span><span class="o">})</span>
+<span class="n">println</span><span class="o">(</span><span class="n">h</span><span class="o">{()=&gt;</span><span class="s">&quot;6&quot;</span><span class="o">})</span>
+<span class="n">println</span><span class="o">(</span><span class="n">i</span><span class="o">{()</span> <span class="k">=&gt;</span> <span class="s">&quot;7&quot;</span><span class="o">})</span>
+</code></pre></div>
+The result is</pre>
+1
+3
+5
+<console>:9: error: type mismatch;
+found : () => java.lang.String
+required: String
+println(h{()=>"6"})
+^
+7
+
+So there is something special about <code>() => Unit</code>
+
+</div>
+
+
+          <div class="footer">
+            <div class="contact">
+              <p>
+                Your Name<br />
+                What You Are<br />
+                you@example.com
+              </p>
+            </div>
+            <div class="contact">
+              <p>
+                <a href="https://github.com/yourusername">github.com/yourusername</a><br />
+                <a href="https://twitter.com/yourusername">twitter.com/yourusername</a><br />
+              </p>
+            </div>
+          </div>
+        </div>
+
+    </body>
+</html>

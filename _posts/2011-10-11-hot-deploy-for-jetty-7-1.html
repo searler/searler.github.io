@@ -1,0 +1,17 @@
+---
+layout: post
+title: Hot deploy for Jetty 7.1
+categories: []
+tags: []
+status: publish
+type: post
+published: true
+meta: {}
+---
+The documentation is not very helpful.
+
+The log output indicates the server notices when a new war is dropped into the webapps directory, but further action is taken.
+
+Turns an unmodified install will perform a hot deploy so long as the application is referenced by a context file and that file is touched.
+
+That is easily arranged as part of an ant build.

@@ -1,0 +1,48 @@
+---
+layout: post
+title: Angular.js and Server Sent Events wiring
+categories:
+- angular
+tags: []
+status: publish
+type: post
+published: true
+meta: {}
+---
+<a href="http://dev.w3.org/html5/eventsource/">SSE</a> provides a standardized HTML5 way to push data over an HTTP connection.
+<a href="http://angularjs.org/">angular</a> is an interesting Javascript MVC framework that uses binding to provide a very clean implementation.
+The general Angular documentation covers interactions that are initiated from the browser. Implementing an external push into Angular was not clearly described until the 1.0 release.
+
+The following example uses a snapshot from upcoming angular 1.0 release.
+
+Strings received via /events, tagged with right, are displayed
+
+{% highlight html %}</pre>
+<!DOCTYPE html>
+<html>
+<head>
+ <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+ <title>AngularJS and SSE</title>
+ <script type='text/javascript' src="http://ci.angularjs.org/job/angular.js-angular-master/ws/build/angular.js"></script>
+</head>
+<body ng-app>
+ <div ng:controller="Main">
+Value {{data}}
+</div>
+
+<script type='text/javascript'>//<![CDATA[
+
+var source = new EventSource('/events');
+
+function Main($scope, $window) {
+ source.addEventListener('right', function(e) {
+ $scope.$apply(function() {
+ $scope.data = e.data;
+ });
+ },false);
+}
+//]]>
+</script>
+</body>
+</html>
+<pre>{% endhighlight %}

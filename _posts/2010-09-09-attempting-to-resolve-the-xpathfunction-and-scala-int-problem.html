@@ -1,0 +1,32 @@
+---
+layout: post
+title: Attempting to resolve the XPathFunction and Scala int problem
+categories: []
+tags: []
+status: publish
+type: post
+published: true
+meta:
+  _wp_old_slug: ''
+---
+As previously noted, there are difficulties returning a Scala "primitive" type.
+
+A view might provide a way to resolve that problem
+
+{% highlight scala %}class O[T,R<%Object](val f:Function1[T,R])  extends XPathFunction {  def evaluate(list:java.util.List[_]) = f(list.get(0).asInstanceOf[T])}
+implicit def f1ToO[T,R<%Object](f:Function1[T,R]):O[T,R]=new O(f)
+Map[String,XPathFunction]("a1"->{i:Int=>i*2}){% endhighlight %}
+
+Note the explicit return type on the f1ToO function, which is needed to avoid an error indicating that recursive functions need a return type!
+
+Unfortunately, this approach fails because there are two implicit conversions in Predef.
+
+This problem can be resolved by explicitly specifying the desired final type
+
+{% highlight scala %}class OInt[T,R<%java.lang.Integer](val f:Function1[T,R])  extends XPathFunction {  def evaluate(list:java.util.List[_]) = f(list.get(0).asInstanceOf[T])}
+implicit def f1ToOInt[T,R<%java.lang.Integer](f:Function1[T,R]):OInt[T,R]=new OInt(f)
+
+val mint= Map[String,XPathFunction]("int"->{i:Int=>i*2})
+mint("int").evaluate(Collections.singletonList(12)){% endhighlight %}
+
+It is fortunate that only a few such mappings are needed to cover the impacted Scala types

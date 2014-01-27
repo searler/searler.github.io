@@ -1,0 +1,47 @@
+---
+layout: post
+title: Recursive PartialFunctions for Choreography
+categories:
+- Akka
+- Scala
+tags: []
+status: publish
+type: post
+published: true
+meta: {}
+---
+The core of an Actor is the receive function, which is a PartialFunction over the expected inputs to the actor. The remainder of actor is largely boilerplate, concerned with implementation details. Our choreography DSL must be built around the process of building a PartialFunction that implements the composite service.
+
+An interaction with a sub-service might be expressed as a function <code>(A)=>CorrelationID</code> which represents starting of a request/response MEP over the JMS queue. This function exposes an implementation detail (the CorrelationID) and does not capture the type of the expected response. That type would allow Scala to automatically provide useful service, such as automatic wiring via implicit values. It also provides type safety and documentation.
+The response once received will be processed by some function, which can be expressed as part of the sub-service function <code>(A)=>(R)=>X</code>, where R is the type of the response and X is the final result. We have now captured both types that participate in the sub-service interaction and tied it into the workflow that it drives. The key question is then:What is X? In general, the consuming function will perform further sub-service interactions with their own consuming functions! X is thus a PartialFunction that returns values that have type X. Such recursion must eventually terminate with the final result of the composite service. A special type will be used for that purpose, using the Option idiom
+
+{% highlight scala %}
+trait RPF extends PartialFunction[CI, Any=>RPF]
+trait Lookup[A,R] {
+ def apply(arg:A)(fn:R =>RPF):RPF = ...
+}
+case class Result[A](value:A) extends RPF{...}
+{% endhighlight %}
+
+The composite workflow can now be written as
+
+{% highlight scala %}
+object SingleLineBalance{
+   def apply(pn:Num)(implicit acctLook:Lookup[Num,Acct],  balLook:Lookup[Acct,Bal]) =
+   {
+         acctLook(pn){balLook(_)(Result(_))}
+   }
+}
+{% endhighlight %}
+
+The Lookups representing the sub-services are specified as implicits so they can be "automatically wired" at the point the object is used. Note that SingleLineBalance is not itself the workflow but rather returns a function that is the implementation.
+
+It can be read:
+<ul>
+	<li>Create an RPF to evaluate the composite service for phone number <em>pn
+</em>The RPF will be evaluated elsewhere and at some time in the near future (generally within  an actor)</li>
+	<li>When the RPF is evaluated make a request to the acctLook sub-service with the <em>pn</em></li>
+	<li>When the account number response is received, make a request to the balLook sub-service with that value</li>
+	<li>When the balance response is received, return the balance wrapped in a Result</li>
+</ul>
+This is a faithful representation of the original business process, with minimal boilerplate.

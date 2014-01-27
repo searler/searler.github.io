@@ -1,0 +1,62 @@
+---
+layout: post
+title: Scala XMLLoader as ContentHandler
+categories:
+- Scala
+tags: []
+status: publish
+type: post
+published: true
+meta:
+  _wp_old_slug: ''
+---
+Scala makes it very easy to handle XML but does not provide any means to interact with the standard Java XML tooling. XML can only be created using literals or parsing the string representation. 
+
+The internal implementation of XML.load uses a ContentHandler.  Exposing that ContentHandler would allow Scala XML to be created from a SAX pipeline, which is half of what is required for full integration
+
+The following class provides the necessary implementation
+{% highlight scala %}
+import scala.xml.factory.XMLLoader
+import scala.xml._
+import org.xml.sax._
+import org.xml.sax.helpers.DefaultHandler
+
+class Loader extends DefaultHandler  with   XMLLoader[Elem]{
+   val newAdapter = adapter
+   def value = newAdapter.rootElem.asInstanceOf[Elem]
+
+   override def characters( ch:Array[Char],start:Int,length:Int) {
+     newAdapter.characters(ch,start,length)
+   }
+   override def endDocument() {
+     newAdapter.scopeStack.pop
+   }
+   override def endElement(uri:String,localName:String, qName:String){
+     newAdapter.endElement(uri,localName,qName)
+   }    
+   override def processingInstruction(target:String,  data:String){
+     newAdapter.processingInstruction(target,data)
+   }
+   override def startDocument(){
+     newAdapter.scopeStack push TopScope
+   }    
+   override def startElement(uri:String,localName:String, qName:String,atts:Attributes){
+       newAdapter.startElement(uri,localName,qName,atts)
+   }       
+}
+{% endhighlight %}
+
+Illustrated by
+{% highlight scala %}
+import java.io._
+import javax.xml.parsers._
+import javax.xml.transform._
+import javax.xml.transform.sax.SAXResult
+
+val transformerFactory = TransformerFactory.newInstance
+val xformer = transformerFactory.newTransformer
+val xl = new Loader
+xformer.transform(new StreamSource(new StringBufferInputStream("""<X><y/>fdgfd</X>""")), new SAXResult(xl))
+println(xl.value)
+{% endhighlight %}
+

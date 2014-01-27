@@ -1,0 +1,19 @@
+---
+layout: post
+title: Orchestration and its implementation in the real world
+categories: []
+tags: []
+status: draft
+type: post
+published: false
+meta: {}
+---
+Non trivial SOA implementations contain composite services, which require some form of orchestration to combine the subordinate services. XPDL or BPEL executed by products such as Tibco BusinessWorks or Oracle Aqualogic ServiceBus are common implementation choices and might be considered a best practice.  Real deployments are not that straightforward and the results can be distinctly suboptimal.
+
+The BPM language is never sufficient to actually implement the service. This is particularly true of XPDL which simplifies defines a flow between Activities. The actual implementation of those Activities is outside the scope of the XPDL specification and thus tightly coupled to the runtime  implementation. Some languages (esp the proprietary) attempt to resolve this problem by using WSDL to define each Activity, decoupling the orchestration from the implementation. This is a heavy weight approach<em>,</em> in both development and runtime cost. Simply calling chunks of Java code is widely used. This has a low conceptual cost, and allows easy reuse of an existing code base and development practice. Such an approach is particularly useful for brownfields, where SOA and BPM are being adding to existing systems and organizations.
+
+The BPM languages do not define how Java code is to be called. The passing of data to and from the Java code is particularly troublesome. This is even true for XML, which is ironic given its role in SOA. The least common dominator data type is then a String, which minimizes coupling to the specific runtime. Every traversal of the BPM runtime/Java interface then requires a parse, followed by a serialization. The result is very poor performance.
+
+A String based implementation also cripples any XML processing within the BPM runtime.
+
+&nbsp;

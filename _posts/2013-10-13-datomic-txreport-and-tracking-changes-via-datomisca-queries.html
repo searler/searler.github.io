@@ -1,0 +1,34 @@
+---
+layout: post
+title: Datomic txReport and tracking changes via Datomisca queries
+categories:
+- datomic
+- datomisca
+- Scala
+tags: []
+status: publish
+type: post
+published: true
+meta:
+  _publicize_pending: '1'
+---
+A common web site use case is notifying a user of a change of address, with notifications to both old and new addresses.
+This is a simple mechanism that helps to address fraud.
+
+Generally this code would form part of the http post action, perhaps including some indirection via a queue.
+Arguably that logic is orthogonal to the primary function of the web site.
+
+Datomic records all changes to entities and provides a <a href="http://docs.datomic.com/javadoc/datomic/Connection.html#txReportQueue()">notification mechanism</a>
+
+The following gist illustrates how this might be implemented.
+
+Line 39 creates a user with the name "john" and email "jon@example.com".
+Line 44 updates that user, changing the email to "john@example.net"
+
+Line 46 defines a query that will retrieve the name and previous email, given a delta to the user entity
+
+Line 59 will print empty result since qe is the change that created the user (and there is thus no previous value)
+Line 62 creates the result:("john", "jon@example.com","john@example.net")
+Which provides the name, before and after emails needed to send the warning email.
+
+[gist]6963120[/gist]
