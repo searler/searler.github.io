@@ -8,6 +8,7 @@ categories: RxJava Camel
 The earlier experimentation with stdin was extended to a more realistic scenario, using a HTTP endpoint that accepts a POST request, which is ignored. The goal was to explore how to specify the wiring and ensure there are no performance surprises.
 
 The first implementation uses a conventional Camel route.
+
 ```java
 public static class NoopBean {
     public void accept(String string){
@@ -19,7 +20,7 @@ CamelContext camelContext = new DefaultCamelContext();
       
 RouteBuilder builder = new RouteBuilder() {
    public void configure() {
-      from("jetty:http://localhost:6060/camel").bean(NoopBean.class);;
+      from("jetty:http://localhost:6060/camel").bean(NoopBean.class);
    }
 };
      
@@ -29,6 +30,7 @@ camelContext.start();
 ```
 
 The second implementation uses RxJava for wiring. 
+
 ```java
 CamelContext camelContext = new DefaultCamelContext();
 ReactiveCamel rx = new ReactiveCamel(camelContext);
