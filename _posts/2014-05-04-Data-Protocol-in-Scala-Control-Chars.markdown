@@ -34,9 +34,6 @@ It might be argued the above design is too simplistic
 since it does not use any typing mechanism to specify the concept of a control character.
 That additional sophistication (and complexity) is not useful for this problem domain.
 
-{% highlight scala %}
-{% endhighlight %}
-
 Some of the control characters are used to control transmission (details to follow).
 The PairByte object provides an extractor that detects those special characters.
 (The nomenclature arises because these characters appear in pairs)
