@@ -5,7 +5,7 @@ date:   2014-09-06 16:20:00
 categories:  scala 
 ---
 
-The [scodec](https://github.com/scodec/scodec) implements a combinator based encoding and decoding library for Scala.
+The [scodec](https://github.com/scodec/scodec) library implements a combinator based encoding and decoding library for Scala.
 
 My use case only required encoding, but all the combinators are designed for codecs (which are bidirectional).
 I could write an additional set of encoder only combinators, but that seemed rather pointless. 
