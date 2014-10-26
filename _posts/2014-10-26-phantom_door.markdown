@@ -5,7 +5,8 @@ date:   2014-10-26 10:20:00
 categories:  scala 
 ---
 
-[This](http://www.slideshare.net/ktoso/scala-types-of-types-lambda-days)
+[This](http://www.slideshare.net/ktoso/scala-types-of-types-lambda-days) describes
+how phantom types can be used to enforce method preconditions at compile time.
 
 {% highlight scala %}
 sealed trait DoorState
