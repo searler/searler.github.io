@@ -1,10 +1,10 @@
 ---
 layout: post
-title:  "IEE Software and SOA misconceptions"
+title:  "IEEE Software and SOA misconceptions"
 date:   2014-12-17 22:10:00
 categories:  SOA 
 ---
-The Sept/October 2014 IEE Software has an article _Service-Oriented Architecture and Legacy Systems_,
+The Sept/October 2014 IEEE Software has an article _Service-Oriented Architecture and Legacy Systems_,
 which contains a number of surprising conclusions.
 
 **Ultimately, the message in HTTP is plaintext, which any system or programming language can produce.**
