@@ -57,7 +57,8 @@ object StdInDriver extends App {
 
   val system = ActorSystem("example", cc)
   val managerActor = system.actorOf(Props[Manager], "manager")
-  val driverActor = system.actorOf(Props(new StdInDriver(managerActor)).withDispatcher("cli-dispatcher"), "cli")
+  val driverActor = system.actorOf(Props(new StdInDriver(managerActor)).
+      withDispatcher("cli-dispatcher"), "cli")
 }
 {% endhighlight %}
 
@@ -132,7 +133,8 @@ the redundancy.
 
   private def command[T](valid: PartialFunction[T, Unit],
                  invalid: PartialFunction[T, Unit]) = {
-    (valid andThen { _ => context.become(awaitResponse) }) orElse (invalid andThen { _ => prompt() })
+    (valid andThen { _ => context.become(awaitResponse) })
+       orElse (invalid andThen { _ => prompt() })
   }
   
    private def prompt(): Unit = {
@@ -212,7 +214,8 @@ class StdInDriver(manager: ActorRef) extends Actor {
 
   private def command[T](valid: PartialFunction[T, Unit],
                          invalid: PartialFunction[T, Unit]) = {
-    (valid andThen { _ => context.become(awaitResponse) }) orElse (invalid andThen { _ => prompt() })
+    (valid andThen { _ => context.become(awaitResponse) }) orElse 
+      (invalid andThen { _ => prompt() })
   }
 
   private def prompt(): Unit = {
@@ -237,7 +240,8 @@ object StdInDriver extends App {
 
   val system = ActorSystem("example", cc)
   val managerActor = system.actorOf(Props[Manager], "manager")
-  val driverActor = system.actorOf(Props(new StdInDriver(managerActor)).withDispatcher("cli-dispatcher"), "cli")
+  val driverActor = system.actorOf(Props(new StdInDriver(managerActor)).
+      withDispatcher("cli-dispatcher"), "cli")
 }
 {% endhighlight %}
 
