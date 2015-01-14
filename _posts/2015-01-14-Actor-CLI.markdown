@@ -151,8 +151,8 @@ We can resolve this by defining an extractor
 {% highlight scala %}
 object IntExtractor {
   def unapply(s: String): Option[Int] = Try {
-    Some(s.toInt)
-  } getOrElse (None)
+    s.toInt
+  }.toOption
 }
 {% endhighlight %}
 
@@ -231,8 +231,8 @@ class StdInDriver(manager: ActorRef) extends Actor {
 
 object IntExtractor {
   def unapply(s: String): Option[Int] = Try {
-    Some(s.toInt)
-  } getOrElse (None)
+    s.toInt
+  }.toOption
 }
 
 object StdInDriver extends App {
