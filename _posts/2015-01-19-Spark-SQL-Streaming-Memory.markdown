@@ -84,7 +84,14 @@ disk and memory space.
 The maxRate parameter is unfortunately needed since Spark does not implement the necessary flow control.
 That value was empirically derived so as to achieve ~97% CPU load across all 6 cores of an AMD Phenom II X6 1100T.
 
+The web UI indicates a median rate of 400K records/second but the output indicates 800K record/second.
+In other words, the rate is number of lines read from the socket, rather than the number of object written
+into the DStream.
 
+```
+[info] [1421724610000,x,y,z,4000125]
+[info] [1421724610000,a,b,c,4000125]
+```
 
 
 
