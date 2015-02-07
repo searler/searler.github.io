@@ -18,6 +18,12 @@ A Rx Extensions approach would be more declarative and hopefully easier to speci
 It is certainly best to avoid a design where the test harness needs its own tests to ensure
 correctness!
 
+These discussions of log analysis using Rx support this concept:
+
+* [Real-time Event Processing using Linq for Logs & Traces](http://www.slideshare.net/gdrapers/gert-drapers-realtime-event-processing-using-linq-for-traces)
+* [tx](http://tx.codeplex.com/)
+* [Logging what you mean](https://msdn.microsoft.com/en-us/library/dn440729.aspx)
+
 
 
 
