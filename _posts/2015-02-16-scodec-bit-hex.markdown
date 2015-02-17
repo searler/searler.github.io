@@ -20,6 +20,12 @@ val prefixed: ByteVector = hex"0102$x"
 
 Note that the referenced variable must be a ByteVector!
 
+Placing the substitution within the string requires an expression, rather
+than the simple variable reference. 
+
+{% highlight scala %}
+val wrapped: ByteVector = hex"0102${x}0304"
+{% endhighlight %}
 
 An alternative is to explicitly concatenate the ByteVectors:
 
