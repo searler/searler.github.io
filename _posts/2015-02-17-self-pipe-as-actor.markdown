@@ -9,7 +9,8 @@ This [discussion](http://www.sitepoint.com/the-self-pipe-trick-explained/) of th
 and how it is used to reliably handle signals is very interesting. A neat *nix technique that
 I had not previously encountered.
 
-This technique is actually implementing an actor.
+This technique is actually implementing an actor:
+
 * Each signal corresponds to a message
 * Each signal handler corresponds to a message handler
 * The pipes provides the inbox
