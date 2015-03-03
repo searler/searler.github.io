@@ -5,7 +5,22 @@ date:   2015-03-02 20:37:00
 categories:  scala kryo
 ---
 
-Example
+Using primitives can be error prone and hard to understand in large argument lists, since
+it difficult to determine the identity of a value. Named parameters are helpful but
+really all values should use a domain type.
+
+Scala provides value classes to implement domain types without incurring the
+associated runtime costs. In particular, it avoids the need to allocate an instance
+on the heap. 
+
+The documentation (AFAIK) does not cover the serialization costs. 
+
+The following code defines a simple domain concept, using four different designs.
+
+Samples are then serialized, using Java Serialization and [Kryo](https://github.com/EsotericSoftware/kryo);
+with the number of bytes listed in the table below.
+
+The numbers indicate that value classes have no impact.
 
 {% highlight scala %}
  case class Simple(id: Int, form: Int, odd: Boolean, value: Float)
@@ -32,7 +47,7 @@ Example
 {% endhighlight %}
 
 
-| Implementation  | Serialization | Kryo |
+| Implementation  | Java | Kryo |
 | --------------  | ------------- | ---- |
 | Simple          | 86            | 8    |
 | Polymorphic     | 157           | 9    |
