@@ -25,7 +25,9 @@ public int open(String path, FileInfoWrapper info) {
 {% endhighlight %}
 
 
-
+A character based implementation using CUSE would presumably be a better match, but the fuse-jna project does not
+support it. An extensive search only found one usage of CUSE and a single example, indicating this functionality is probably
+orphaned. 
 
 
 
