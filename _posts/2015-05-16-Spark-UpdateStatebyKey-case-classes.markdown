@@ -12,6 +12,14 @@ There are unfortunately is a leak of the reflection created classes needed for s
 especially when using updateStateByKey.
 These [experiments](https://github.com/searler/SparkStreamingLeak) illustrate the difficulty. 
 
+# Update
+
+Failure only occurs when _master_ is _local[*]_.
+
+Given that _local_ is only intended for unit testing, this is not a concern.
+
+
+
 
 
 
