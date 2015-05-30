@@ -30,7 +30,7 @@ The concept is something like the [pig](http://en.wikipedia.org/wiki/Pigging) us
 The implementation requires at least one (and ideally only one) pig message be delivered to each consumer.
 This requires a pig message for each partition, ideally with one consumer per partition.
 
-Fortunately, the (new Java producer)[http://kafka.apache.org/082/javadoc/index.html] allows explicit specification of the partition for a message.
+Fortunately, the [new Java producer](http://kafka.apache.org/082/javadoc/index.html) allows explicit specification of the partition for a message.
 
 Note that mirrormaker does not currently provide the precise control over partitioning required for this implementation.
 
