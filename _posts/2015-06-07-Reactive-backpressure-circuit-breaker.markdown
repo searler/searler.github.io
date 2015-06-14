@@ -35,6 +35,10 @@ since the stream then collapses. The [specification](https://github.com/reactive
 for the Subscriber to be cancelled when onError is signalled, which means the stream is stopped (collapsed). In other words,
 Reactor is not compliant with the specification.
 
+Akka provides a CB [implementation](http://doc.akka.io/docs/akka/snapshot/common/circuitbreaker.html) which protects a function invocation.
+Both synchronous and asynchronous invocations are supported, which is sufficient to cover all actor interactions. Unlike 
+the Hystrix and Reactor implementations, this CB throws an exception when Open.
+
 
 
 
