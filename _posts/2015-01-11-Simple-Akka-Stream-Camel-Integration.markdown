@@ -10,7 +10,7 @@ intermediated by [Akka Camel](http://doc.akka.io/docs/akka/snapshot/scala/camel.
 
 The code reads strings from stdin and writes the uppercased string to stdout.
 
-This could be constrasted with a [direct](https://github.com/typesafehub/akka-contrib-extra/tree/master/src/main/scala/akka/contrib/stream) (and complete) implementation.
+This could be contrasted with a [direct](https://github.com/typesafehub/akka-contrib-extra/tree/master/src/main/scala/akka/contrib/stream) (and complete) implementation.
 
 {% highlight scala %}
 package sample.stream
