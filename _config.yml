@@ -1,7 +1,6 @@
 name: Richard Searle
-markdown: redcarpet
+highlighter: pygments
 redcarpet:
   extensions: ["no_intra_emphasis", "fenced_code_blocks", "autolink", "tables", "strikethrough", "superscript", "with_toc_data"]
-pygments: true
 description:  Richard Searle's Blog
 url:          http://searler.github.io/
