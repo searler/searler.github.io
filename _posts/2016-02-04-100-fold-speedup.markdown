@@ -1,0 +1,23 @@
+---
+layout: post
+title:  "100 fold speedup using Akka Streams"
+date:   2016-02-04 21:20:00
+categories:  scala akka
+---
+
+This [slideshare](http://www.slideshare.net/kazukinegoro5/akka-streams-100-scalamatsuri) describes
+a re-implementation of a system that dumps transaction data from MySql into a csv file. 
+The original implementation used Rails while the new implementation uses [Akka Streams](http://doc.akka.io/docs/akka-stream-and-http-experimental/2.0.3/scala.html).
+
+The standard Rails restriction to a single core is part of the problem, where Akka Streams utilizes all the
+available cores. However, given that the test hardware is only dual core; one might have expected at most 
+a 2 fold improvement. The implication is that Rails is very inefficient, which is no surprise.
+
+One might wonder what improvement might be seen from a simple, single threaded Java implementation.
+
+
+
+
+
+
+
