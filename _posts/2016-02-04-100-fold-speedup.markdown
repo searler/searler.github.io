@@ -15,6 +15,16 @@ a 2 fold improvement. The implication is that Rails is very inefficient, which i
 
 One might wonder what improvement might be seen from a simple, single threaded Java implementation.
 
+# Update
+Further study of the sample code in the slides indicates an application level join between the transactions, products and customers.
+
+The immediate question is thus: **Why not use SQL joins to implement the entire process as a single SQL statement?**
+
+Such an implementation would be both faster and simpler. The slides indicate a single DB server, so the "excuse" that MySQL 
+does not permit a distributed join does not apply.
+
+
+
 
 
 
