@@ -1,6 +1,8 @@
 name: Richard Searle
-highlighter: pygments
+highlighter: rouge
 redcarpet:
-  extensions: ["no_intra_emphasis", "fenced_code_blocks", "autolink", "tables", "strikethrough", "superscript", "with_toc_data"]
+  extensions: ["jekyll-gist", "no_intra_emphasis", "fenced_code_blocks", "autolink", "tables", "strikethrough", "superscript", "with_toc_data"]
 description:  Richard Searle's Blog
 url:          http://searler.github.io/
+gems:
+  - jekyll-gist
