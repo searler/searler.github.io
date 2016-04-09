@@ -4,6 +4,7 @@ title:  "Akka reactive streams subscriber"
 date:   2014-04-20 18:00:00
 categories: akka scala reactive
 ---
+
 The  Akka streams [activator](http://www.typesafe.com/activator/template/akka-stream-scala)
 provides a few illustrative examples. These are all based on the api, especially the Scala DSL; and
 thus do not illustrate all the capabilities. (Quite reasonable given the very early stage of development).

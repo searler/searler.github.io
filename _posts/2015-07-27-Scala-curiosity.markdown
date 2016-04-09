@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Scala curiosity using multiple inheritance"
-date:   2015-7-27 18:20:00
+date:   2015-07-27 18:20:00
 categories:  scala 
 ---
 
