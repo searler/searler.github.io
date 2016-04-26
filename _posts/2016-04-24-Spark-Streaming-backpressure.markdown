@@ -13,3 +13,7 @@ automatically computed value. That value needs to be reasonable, i.e. not much l
 My experimentation indicates that an excessively large value (e.g. 10x) causes the streaming to start with an immediate overload,
 from which it never recovers. 
 
+The backpressure mechanism ensures the processing does not fail but significantly increases variability in processing rate, batch size and processing time. This should be expected where the specified maxRate exceeds the actual capacity of the system. The backpressure mechanism has to throttle the flow and the utilization is high. 
+
+It might be better to control utilization via maxRate and only use backpressure to ensure reliability.
+
